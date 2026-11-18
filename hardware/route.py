@@ -287,18 +287,24 @@ def island_vias(board, r_test=0.33, hole_gap=0.9):
 # would take the shortest way out of U2's left pin row, closing in the neighbouring pins; these stubs fan the
 # row out first (CSRC straight out to a via, GND below it to its own via into the bottom plane), and tie U1's
 # GND pin 10 to its exposed pad. Other nets' tracks that clash with a stub are ripped up and re-routed.
-FANOUT = [   # net, [(x, y) board mm, ...], via at the last point
-    ('CSRC', [(22.4625, 30.75), (20.15, 30.75)], True),                      # U2.15
-    ('GND',  [(22.4625, 31.25), (21.10, 31.25), (20.85, 31.50)], True),      # U2.16
-    ('GND',  [(34.90, 8.625), (36.30, 8.625)], False),                       # U1.10 -> U1 exposed pad
+FANOUT = [   # net, layer, [(x, y) board mm, ...], via at the last point
+    ('CSRC', 'F', [(22.4625, 30.75), (20.15, 30.75)], True),                      # U2.15
+    ('GND',  'F', [(22.4625, 31.25), (21.10, 31.25), (20.85, 31.50)], True),      # U2.16
+    ('GND',  'F', [(34.90, 8.625), (36.30, 8.625)], False),                       # U1.10 -> U1 exposed pad
+    # TG2 (U1 pin 25 -> Q6 gate, 45 mm): out over the top of U1, along the top edge on the bottom layer, down past
+    # Q6 and in from the right. Freerouting's own TG2 was 64 mm and looped round the buck stage.
+    ('TG2',  'F', [(40.175, 4.725), (39.4, 4.72), (38.4, 3.73), (36.51, 3.73)], True),
+    ('TG2',  'B', [(36.51, 3.73), (37.5, 0.7), (58.6, 0.7), (58.6, 10.2)], True),
+    ('TG2',  'F', [(58.6, 10.2), (58.05, 10.75), (58.05, 11.09), (57.46, 11.67), (54.36, 11.67), (53.395, 10.7)], False),
 ]
+FANOUT_FIXED = {'TG2'}       # fully hand-routed nets: not imported, never ripped up
 
 def apply_fanout(board):
     from complete_routes import add_track, add_via, TW, CL, VIA_D
     segs = []                                          # (net, layers, ax, ay, bx, by, half width)
-    for net, pts, via in FANOUT:
-        P = [(OX + x, OY + y) for x, y in pts]
-        segs += [(net, (pcbnew.F_Cu,), a[0], a[1], b[0], b[1], TW / 2) for a, b in zip(P, P[1:])]
+    for net, lay, pts, via in FANOUT:
+        P = [(OX + x, OY + y) for x, y in pts]; L = pcbnew.F_Cu if lay == 'F' else pcbnew.B_Cu
+        segs += [(net, (L,), a[0], a[1], b[0], b[1], TW / 2) for a, b in zip(P, P[1:])]
         if via: segs.append((net, (pcbnew.F_Cu, pcbnew.B_Cu), P[-1][0], P[-1][1], P[-1][0], P[-1][1], VIA_D / 2))
     def dseg(a, b):                                    # distance between two segments (sampled, mm)
         best = 1e9
@@ -321,9 +327,9 @@ def apply_fanout(board):
                 kill.add(t); break
     ripped = sorted({t.GetNetname() for t in kill})
     for t in kill: board.Remove(t)
-    for net, pts, via in FANOUT:
+    for net, lay, pts, via in FANOUT:
         ni = board.FindNet(net); P = [(OX + x, OY + y) for x, y in pts]
-        for a, b in zip(P, P[1:]): add_track(board, ni, 0, a[0], a[1], b[0], b[1])
+        for a, b in zip(P, P[1:]): add_track(board, ni, 0 if lay == 'F' else 1, a[0], a[1], b[0], b[1])
         if via: add_via(board, ni, *P[-1])
     return ripped
 
@@ -563,11 +569,11 @@ if __name__ == '__main__':
     if mode == 'complete':                     # import a session, finish the open links, fill, DRC
         from complete_routes import complete
         board = base_board()
-        rip = sys.argv[3].split(',') if len(sys.argv) > 3 else []
+        rip = sys.argv[3].split(',') if len(sys.argv) > 3 else sorted(FANOUT_FIXED)   # hand-routed nets: not imported
         print('imported tracks/vias:', import_ses(board, sys.argv[2], set(rip)), 'ripped:', rip)
         print('fan-out stubs added, ripped nets:', apply_fanout(board))
         add_top_pour(board)                    # GND pads count as connected when the top pour reaches them
-        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, RW, RH, skip=('GND',), rippable=('GND',), order=rip + ['LSP', 'LSN', 'CSRC', 'ISP_K', 'ISN_K']):
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, RW, RH, skip=('GND',), rippable=('GND',), no_rip=FANOUT_FIXED, order=rip + ['LSP', 'LSN', 'CSRC', 'ISP_K', 'ISN_K']):
             print('  ', line)
         finish(board); sys.exit(0)
     board = pcbnew.LoadBoard(PLACED)

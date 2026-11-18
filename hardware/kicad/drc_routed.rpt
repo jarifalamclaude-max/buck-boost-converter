@@ -1,5 +1,5 @@
-** Drc report for /home/user/buck-boost-converter/hardware/kicad/SafeBuck-80_placed.kicad_pcb **
-** Created on 2026-11-18 15:02:10 **
+** Drc report for kicad/SafeBuck-80.kicad_pcb **
+** Created on 2026-11-18 15:38:10 **
 
 ** Found 255 DRC violations **
 [silk_overlap]: Silkscreen overlap

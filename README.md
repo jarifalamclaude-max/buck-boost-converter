@@ -193,11 +193,9 @@ which is how a bench "smoke tester" is normally wired.
   If it runs hot, add a heatsink pad under the board there, or move to a 4-layer board with an unbroken GND layer.
 - One GND via (for C29, the compensation capacitor) touches the edge of C28's ground pad. Vias are tented, so very little
   solder is drawn into it, but check that C28 is soldered properly.
-- **TG2 takes the long way round.** The gate track from U1 pin 25 (TG2) to Q6 (switch D) is about 97 mm long; the direct
-  distance is 15 mm. Freerouting found no short path through the full area right of U1 (its own route was already 64 mm).
-  The long track adds roughly 0.1 µH to the switch-D gate loop, and it runs round the buck stage, where it cuts the bottom
-  GND plane under Q3/Q4. BST2 is also longer than it should be (9 mm for a 2 mm gap). Switch D only switches in boost mode
-  (output above input). The board should still work, but before you order, re-route TG2 by hand in KiCad, next to SW2 from
-  U1 pin 25 to Q6's gate, then refill the zones (press B) and run DRC.
+- **TG2 is still longer than ideal.** The gate track from U1 pin 25 to Q6 (switch D) is hand-routed (`route.FANOUT`): over the
+  top of U1, along the top edge on the bottom layer, then in to Q6 from the right, 44 mm in all (Freerouting's was 64 mm and
+  the first completed board's 97 mm, looping round the buck stage). The direct distance is 15 mm, but the parts right of U1
+  leave no shorter way. BST2 is 9 mm for a 2 mm gap. Switch D only switches in boost mode (output above input).
 - The PCB was laid out by scripts (Freerouting plus a custom completion router), not by hand. It passes DRC, but look
   over the copper in KiCad before you order, especially the hot loops (see `docs/layout-rules.md`).

@@ -45,8 +45,9 @@ How it is done on this board:
   about 10 V of ringing at SW1 or SW2, solder a 2.2 Ω + 470 pF RC (0805/1206) by hand from the switch node to GND, right at
   Q4 or Q5. The bootstrap caps C24/C25 sit directly at U1 pins 2–3 and 26–27, with no series resistor.
 
-* **Known weak spot:** the TG2 gate track (U1 pin 25 → Q6) is about 97 mm long and loops round the buck stage, and the
-  BST2 track is 9 mm for a 2 mm gap. Both should be re-routed by hand next to SW2 before ordering (see README, Limitations).
+* The TG2 gate track (U1 pin 25 → Q6) is hand-routed: over the top of U1, along the top edge on the bottom layer and in to
+  Q6 from the right (44 mm). It no longer loops round the buck stage, so the bottom GND plane under Q3/Q4 is whole.
+  BST2 is still 9 mm for a 2 mm gap.
 
 ## 4. Kelvin current sensing
 
