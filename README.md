@@ -38,6 +38,7 @@ output short and a reversed battery on the output. Every one of these only light
 |---|---|
 | [`kicad/`](kicad/) | **KiCad project — open `kicad/SafeBuck-80.kicad_pro`** (schematic + routed PCB + project libraries). `kicad/SafeBuck-80_KiCad.zip` = same files in one download |
 | [`docs/SafeBuck-80_Build_Guide.pdf`](docs/SafeBuck-80_Build_Guide.pdf) | **Noob-der jonno**: JLCPCB order step by step, first power-up, CV/CC set, protection test, troubleshooting |
+| [`docs/SafeBuck-80_How_It_Works.pdf`](docs/SafeBuck-80_How_It_Works.pdf) | **Sohoj bhashay**: buck/boost kivabe kaj kore (chobi soho), component chena, board map + all 113 parts (ki kaj kore, value keno, na thakle ki hoto), fault table, design process. Source: `docs/make_how_it_works.py` |
 | [`docs/SafeBuck-80_Component_Guide.pdf`](docs/SafeBuck-80_Component_Guide.pdf) | **Kon component keno**: every part's role, why it was chosen, full BOM with LCSC numbers |
 | [`docs/SafeBuck-80_Schematic.pdf`](docs/SafeBuck-80_Schematic.pdf) | Full schematic (exported from KiCad) |
 | [`docs/current_flow/index.html`](docs/current_flow/index.html) | **Current flow page**: 3D board, step-by-step current path (buck, boost, control, input ulta, output-e battery ulta, short), threshold-set-kora part-gulo formula shoho, shob part-er table. Folder download kore browser-e kholo (ba web server diye) |
