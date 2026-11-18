@@ -546,25 +546,25 @@ def prune_stubs(board):
     return removed, trimmed
 
 BLOCKED = {}                    # nets a ripper must keep off after a rollback (kept across complete() calls)
-NO_RIP = {'TG1', 'TG2', 'BG1', 'BG2', 'BST1', 'BST2', 'SW1', 'SW2'}   # gate drive / switch node: never ripped up
+NO_RIP = {'TG1', 'TG2', 'BG1', 'BG2', 'BST1', 'BST2', 'SW1', 'SW2'}   # gate drive / switch node: not ripped for GND
 
-def detour_limit(src, dst):
-    """cost cap for a normal route: 2x the gap between the two clusters + 6 mm + two vias. A longer way round is
-    worse than ripping up a signal track (a 97 mm gate-drive loop once wrecked the GND plane under the buck stage)."""
+def detour_limit(src, dst, k=4.0, extra=15.0):
+    """cost cap for a route: k x the gap between the two clusters + extra mm + two vias. A longer way round is worse
+    than ripping up a signal track (a 97 mm gate-drive loop once wrecked the GND plane under the buck stage)."""
     I = [c[1] for c in dst]; J = [c[2] for c in dst]
     gap = min(math.hypot(max(min(I) - c[1], 0, c[1] - max(I)), max(min(J) - c[2], 0, c[2] - max(J))) for c in src)
-    return 2.0 * gap + 6.0 / G + 40.0
+    return k * gap + extra / G + 40.0
 
-def complete(board, zones, ox, oy, W, H, skip=(), rippable=(), only=None, order=(), rounds=14, rip=True):
+def complete(board, zones, ox, oy, W, H, skip=(), rippable=(), only=None, order=(), rounds=14, rip=True, no_rip=(), cap=False):
     """skip: nets not routed here; rippable: skipped nets whose tracks may still be ripped up;
     only: route just these nets; rip: allow rip-up. GND targets are the filled GND planes (top pour, bottom plane).
     A rip-up is a transaction: the ripped nets must route again normally in the next round (they may not rip
     anything themselves); if one cannot, the rip-up is rolled back and the ripping net tries again with those
-    nets' tracks kept hard."""
+    nets' tracks kept hard. no_rip: nets that may never be ripped up; cap: refuse very long normal routes."""
     log = []
     zr = {n: r for n, r in zones}
     rank = {n: k for k, n in enumerate(order)}
-    protect = (set(skip) - set(rippable)) | NO_RIP     # nets whose tracks may not be ripped up
+    protect = (set(skip) - set(rippable)) | set(no_rip)   # nets whose tracks may not be ripped up
     tx, blocked, tries = None, BLOCKED, {}
     for rnd in range(rounds):
         open_ = clusters(board)
@@ -592,7 +592,8 @@ def complete(board, zones, ox, oy, W, H, skip=(), rippable=(), only=None, order=
                 if name == 'GND':                              # a via into the bottom plane, or the top pour, will do
                     dst |= plane_cells(board, g, net, src, win=5.0) | plane_cells(board, g, net, src, pcbnew.F_Cu, 0, win=5.0)
                 dst -= src
-                path = astar2(g, net, src, dst, vpen=vpen, max_cost=None if name == 'GND' else detour_limit(src, dst))
+                mc = detour_limit(src, dst) if cap and name != 'GND' else None
+                path = astar2(g, net, src, dst, vpen=vpen, max_cost=mc)
                 if path:
                     nseg, nvia, ids = emit(board, g, ni, net, path)
                     if tx and name in tx['victims']: tx['vids'] += ids

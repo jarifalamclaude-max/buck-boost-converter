@@ -6,7 +6,7 @@ Route SafeBuck-80 (2-layer, 2 oz):
   4. F.Cu GND fill, GND stitching vias, zone fill, DRC
 Run with KiCad's python after build_pcb.py:
   /usr/bin/python3 route.py route                      # Freerouting from scratch
-  /usr/bin/python3 route.py complete kicad/SafeBuck-80.ses   # finish open links with complete_routes.py, fill, DRC
+  /usr/bin/python3 route.py complete routing/SafeBuck-80_freerouting.ses   # import a session, finish it, fill, DRC
 """
 import os, sys, math, re, subprocess, collections
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -524,7 +524,9 @@ def finish(board):
     # GND copper the pours and merge vias did not reach is routed now (with rip-up; ripped nets re-route or roll
     # back). A refill can move a pour edge away from a new track end, so repeat until a refill changes nothing.
     for it in range(4):
-        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H, skip=(), rippable=(), rounds=10):
+        from complete_routes import NO_RIP           # the gate drives keep their short paths: GND finds other room
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H, skip=(), rippable=(), rounds=10,
+                             no_rip=NO_RIP, cap=True):
             print('  ', line)
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
         print('GND merge vias (added, components left):', gnd_merge(board))
@@ -554,7 +556,7 @@ def reroute(prev_ses, passes=100):
     finish(board)
 
 if __name__ == '__main__':
-    mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import | reroute
+    mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import | reroute | complete
     if mode == 'reroute':
         reroute(sys.argv[2]); sys.exit(0)
     if mode == 'complete':                     # import a session, finish the open links, fill, DRC

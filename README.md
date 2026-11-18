@@ -63,6 +63,7 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/make_logo.py` | Turns a logo image (`docs/img/duburi_logo.png`) into a silkscreen footprint for the board's bottom side; without an image it draws a "DUBURI" text badge |
 | `hardware/verify.py` | One-command check: netlist ↔ schematic ↔ PCB, footprint links, DRC summary |
 | `hardware/check_place.sh` | Quick placement check: build, list courtyard overlaps, SVG preview |
+| `hardware/routing/SafeBuck-80_freerouting.ses` | The Freerouting session the routed board was built from (input of `route.py complete`) |
 | `hardware/kicad/SafeBuck-80.kicad_pro` | **KiCad project — open this.** Contains the schematic and the routed PCB |
 | `hardware/kicad/SafeBuck-80.kicad_sch` | Schematic (label style: every pin has a net label) |
 | `hardware/kicad/SafeBuck-80.kicad_pcb` | Routed 2-layer PCB |
@@ -77,8 +78,11 @@ output short and a reversed battery on the output. Every one of these only light
 Regenerate everything (Ubuntu with KiCad 7, Java, Node + Playwright):
 
 ```bash
-cd hardware && python3 make_logo.py && /usr/bin/python3 build_pcb.py && /usr/bin/python3 route.py route && /usr/bin/python3 route.py complete kicad/SafeBuck-80.ses && python3 make_schematic.py && /usr/bin/python3 verify.py && python3 make_jlcpcb.py && cd .. && python3 docs/make_docs.py
+cd hardware && python3 make_logo.py && /usr/bin/python3 build_pcb.py && /usr/bin/python3 route.py complete routing/SafeBuck-80_freerouting.ses && python3 make_schematic.py && /usr/bin/python3 verify.py && python3 make_jlcpcb.py && cd .. && python3 docs/make_docs.py
 ```
+
+`routing/SafeBuck-80_freerouting.ses` is the Freerouting session this board was made from. `route.py route` runs
+Freerouting from scratch instead; its result changes from run to run, so the completion step can end differently.
 
 ## Block diagram
 
@@ -185,5 +189,11 @@ which is how a bench "smoke tester" is normally wired.
   If it runs hot, add a heatsink pad under the board there, or move to a 4-layer board with an unbroken GND layer.
 - One GND via (for C29, the compensation capacitor) touches the edge of C28's ground pad. Vias are tented, so very little
   solder is drawn into it, but check that C28 is soldered properly.
+- **TG2 takes the long way round.** The gate track from U1 pin 25 (TG2) to Q6 (switch D) is about 97 mm long; the direct
+  distance is 15 mm. Freerouting found no short path through the full area right of U1 (its own route was already 64 mm).
+  The long track adds roughly 0.1 µH to the switch-D gate loop, and it runs round the buck stage, where it cuts the bottom
+  GND plane under Q3/Q4. BST2 is also longer than it should be (9 mm for a 2 mm gap). Switch D only switches in boost mode
+  (output above input). The board should still work, but before you order, re-route TG2 by hand in KiCad, next to SW2 from
+  U1 pin 25 to Q6's gate, then refill the zones (press B) and run DRC.
 - The PCB was laid out by scripts (Freerouting plus a custom completion router), not by hand. It passes DRC, but look
   over the copper in KiCad before you order, especially the hot loops (see `docs/layout-rules.md`).
