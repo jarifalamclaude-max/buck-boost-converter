@@ -14,14 +14,15 @@
   --fault:#c23030;        /* fault current, red LEDs */
   --fly:#6a4fc9;          /* freewheel / inductor energy */
   --hl:#e8a33d;           /* highlighted part outline */
+  --wire:#9aa7b2; --ok:#0b7d2b;
   --display:"Barlow Condensed","Arial Narrow",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0b1117; --fg:#e1e8ed; --muted:#94a2ae; --line:#24313b; --card:#121b22; --stage-a:#1a2630; --stage-b:#0d151b; --btn:#15212a;
-  --power:#e7954f; --ret:#8b97a3; --ctrl:#6fb1ee; --sense:#4fcfaa; --fault:#f07070; --fly:#a996f0; --hl:#f2b85a; color-scheme:dark }}
+  --power:#e7954f; --ret:#8b97a3; --ctrl:#6fb1ee; --sense:#4fcfaa; --fault:#f07070; --fly:#a996f0; --hl:#f2b85a; --wire:#4d5d6a; --ok:#4cc46a; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#0b1117; --fg:#e1e8ed; --muted:#94a2ae; --line:#24313b; --card:#121b22; --stage-a:#1a2630; --stage-b:#0d151b; --btn:#15212a;
-  --power:#e7954f; --ret:#8b97a3; --ctrl:#6fb1ee; --sense:#4fcfaa; --fault:#f07070; --fly:#a996f0; --hl:#f2b85a; color-scheme:dark }
+  --power:#e7954f; --ret:#8b97a3; --ctrl:#6fb1ee; --sense:#4fcfaa; --fault:#f07070; --fly:#a996f0; --hl:#f2b85a; --wire:#4d5d6a; --ok:#4cc46a; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 56px}
@@ -92,6 +93,42 @@ tr.grp td{font-family:var(--display);font-size:1.05rem;background:color-mix(in s
 .plab{font-family:var(--mono);font-size:1.45px;font-weight:600;fill:#fff;paint-order:stroke;stroke:#000;stroke-width:.35px}
 .mark{font-family:var(--mono);font-size:1.7px;font-weight:700;paint-order:stroke;stroke:#000;stroke-width:.4px}
 .foot{font-size:.8rem;color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bar .lab{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.bar button{font:inherit;font-family:var(--mono);font-size:.84rem;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer}
+.bar button[aria-pressed="true"]{border-color:var(--power);box-shadow:inset 0 -3px 0 var(--power)}
+.bar button:focus-visible{outline:2px solid var(--ctrl);outline-offset:2px}
+.fig{margin:0;display:flex;flex-direction:column;gap:8px}
+.flowbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:8px}
+#flow{display:block;width:100%;min-width:760px;height:auto;font-family:var(--mono)}
+.w{fill:none;stroke:var(--wire);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.w.thin{stroke-width:1.8}
+.w.only{stroke:none}
+.w.is-main{stroke:var(--power);stroke-width:5.5;stroke-dasharray:11 8;animation:flow .8s linear infinite}
+.w.is-fly{stroke:var(--fly);stroke-width:5;stroke-dasharray:11 8;animation:flow .8s linear infinite}
+.w.is-ctrl{stroke:var(--ctrl);stroke-width:2.8;stroke-dasharray:7 6;animation:flow 1.1s linear infinite}
+.w.is-test{stroke:var(--sense);stroke-width:2.6;stroke-dasharray:2 7;animation:flow 2.4s linear infinite}
+.w.is-fault{stroke:var(--fault);stroke-width:4.5;stroke-dasharray:11 8;animation:flow .8s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-38}}
+@media (prefers-reduced-motion: reduce){.w.is-main,.w.is-fly,.w.is-ctrl,.w.is-test,.w.is-fault{animation:none}}
+.gnd{fill:none;stroke:var(--wire);stroke-width:1.6}
+.rail{fill:var(--fg);font-size:12px;font-weight:600;letter-spacing:.04em}
+.node rect{fill:var(--bg);stroke:var(--wire);stroke-width:1.4}
+.node text{fill:var(--fg);font-size:12px;text-anchor:middle}
+.node .nm{font-weight:600}
+.node .sub{fill:var(--muted);font-size:10.5px}
+.node .st{font-size:10.5px;font-weight:600;fill:var(--muted)}
+.node.live rect{stroke:var(--power);stroke-width:2.6}
+.node.flyn rect{stroke:var(--fly);stroke-width:2.6}
+.node.ctl rect{stroke:var(--ctrl);stroke-width:2.4}
+.node.lit rect{stroke:var(--fault);stroke-width:2.6;fill:color-mix(in srgb,var(--fault) 14%,var(--bg))}
+.node.bad rect{stroke:var(--fault);stroke-width:2.8}
+.node.live .st,.node.flyn .st{fill:var(--ok)}
+.node.bad .st{fill:var(--fault)}
+.stats{margin:0;display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);gap:4px 18px;font-size:.9rem}
+.stats dt{font-family:var(--mono);font-size:.76rem;color:var(--muted);padding-top:2px}
+.stats dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.legend i.dot{border-top-style:dotted}
 </style>
 
 <div class="wrap">
@@ -115,18 +152,132 @@ tr.grp td{font-family:var(--display);font-size:1.05rem;background:color-mix(in s
   </div>
 
   <h2>Current kon rasta diye jay</h2>
-  <p>Step tipo. Mota kamla dag = main power current, dhushor bhanga dag = GND plane diye ferot, nil = gate / control, sobuj = mapa (sense), lal = fault current ar red LED, beguni = inductor-er jome thaka current. Dag-er nodachora current-er dike. Board-er chobi top layer-er; bottom layer puro GND plane.</p>
-  <div class="legend">
-    <span style="color:var(--power)"><i></i>power</span><span style="color:var(--ret)"><i class="dash"></i>GND diye ferot</span>
-    <span style="color:var(--fly)"><i></i>inductor current</span><span style="color:var(--ctrl)"><i></i>gate / control</span>
-    <span style="color:var(--sense)"><i></i>mapa</span><span style="color:var(--fault)"><i></i>fault / LED</span>
+  <p>Converter-e char ta switch: input dike Q3 (A) ar Q4 (B), output dike Q5 (C) ar Q6 (D). Input output-er beshi hole A/B palakrome chole ar D shob shomoy on (buck); kom hole A on thake ar C/D palakrome chole (boost). U1 (LT8390) R15, R31 ar RV1 theke mepe kon switch kokhon chalu hobe thik kore. Niche step gulo ek ek kore tipo.</p>
+  <div class="bar" id="steps" role="group" aria-label="Operating steps">
+    <span class="lab">Step</span>
+    <button type="button" data-step="plug" aria-pressed="true">1 · Input lagano</button>
+    <button type="button" data-step="buckA" aria-pressed="false">2 · Buck: A on</button>
+    <button type="button" data-step="buckB" aria-pressed="false">3 · Buck: A off</button>
+    <button type="button" data-step="boostC" aria-pressed="false">4 · Boost: C on</button>
+    <button type="button" data-step="boostD" aria-pressed="false">5 · Boost: C off</button>
   </div>
-  <div class="steps" id="steps" role="group" aria-label="Current flow step"></div>
-  <div class="flow">
-    <div class="board"><svg id="flowsvg" viewBox="0 0 72 54" role="img" aria-label="Board top view with the current path of the selected step"></svg></div>
-    <div class="panel" id="panel"></div>
+  <div class="bar" role="group" aria-label="Fault cases">
+    <span class="lab">Jodi bhul hoy</span>
+    <button type="button" data-step="inrev" aria-pressed="false">Input ulta</button>
+    <button type="button" data-step="ov" aria-pressed="false">Input 45 V</button>
+    <button type="button" data-step="short" aria-pressed="false">Output short</button>
+    <button type="button" data-step="batrev" aria-pressed="false">Output-e battery ulta</button>
+    <button type="button" data-step="hot" aria-pressed="false">Beshi gorom</button>
   </div>
+  <figure class="fig">
+    <div class="flowbox">
+      <svg id="flow" viewBox="0 0 1080 640" role="img" aria-label="SafeBuck-80 block diagram: input, fuse F1, Q1 and Q2 (LM74930), input caps, switch A Q3 and B Q4, R15, inductor L1, switch C Q5 and D Q6, output caps, R31, F2, J2 and the load, return through Q7 and the GND plane. U1 LT8390 reads R15, R31 and RV1 and drives the four switches.">
+        <!-- power row: wires drawn in the direction the current flows -->
+        <path id="w-p1" class="w" d="M105,70 H125"/>
+        <path id="w-p2" class="w" d="M180,70 H200"/>
+        <path id="w-p3" class="w" d="M265,70 H285"/>
+        <path id="w-p4" class="w" d="M365,70 H385"/>
+        <path id="w-p5" class="w" d="M465,70 H545"/>
+        <path id="w-cin" class="w" d="M505,70 V115"/>
+        <path id="w-cing" class="w thin" d="M505,145 V158"/>
+        <path id="w-p6a" class="w" d="M625,70 H660"/>
+        <path id="w-p6b" class="w" d="M660,70 H680"/>
+        <path id="w-sw1" class="w" d="M660,175 V70"/>
+        <path id="w-q4g" class="w thin" d="M612,222 V212 H625"/>
+        <path id="w-p7" class="w" d="M745,70 H765"/>
+        <path id="w-p8a" class="w" d="M855,70 H875"/>
+        <path id="w-p8b" class="w" d="M875,70 H905"/>
+        <path id="w-sw2" class="w" d="M875,70 V175"/>
+        <path id="w-q5g" class="w thin" d="M840,212 H828 V222"/>
+        <path id="w-p9a" class="w" d="M985,70 H1040 V130"/>
+        <path id="w-p9b" class="w" d="M1040,130 V150"/>
+        <path id="w-co" class="w" d="M1040,130 H1000"/>
+        <path id="w-cor" class="w only" d="M1000,130 H1040"/>
+        <path id="w-p10" class="w" d="M1040,190 V215"/>
+        <path id="w-p11" class="w" d="M1040,255 V280"/>
+        <path id="w-p12" class="w" d="M1040,315 V340"/>
+        <path id="w-p13" class="w" d="M1040,410 V435"/>
+        <path id="w-g4" class="w" d="M1040,470 V590 H900"/>
+        <path id="w-g3" class="w" d="M820,590 H180"/>
+        <path id="w-g2" class="w" d="M125,590 H105"/>
+        <path id="w-d15" class="w thin" d="M985,145 V590"/>
+        <path id="w-bat" class="w only" d="M820,590 V625 H985 V145"/>
+        <path id="w-revret" class="w only" d="M275,70 H105"/>
+        <path id="w-short" class="w only" d="M1040,315 V435"/>
+        <!-- front end -->
+        <path id="w-vf" class="w thin" d="M275,70 V115"/>
+        <path id="w-div" class="w thin" d="M275,145 V170"/>
+        <path id="w-hg" class="w thin" d="M325,170 V95"/>
+        <path id="w-dg" class="w thin" d="M425,170 V95"/>
+        <path id="w-flt" class="w thin" d="M255,200 H110"/>
+        <path id="w-lin1" class="w thin" d="M60,565 V215"/>
+        <path id="w-lin2" class="w thin" d="M110,182 H115 V30 H275 V70"/>
+        <!-- U1: gate drive, sense -->
+        <path id="w-tg1" class="w thin" d="M590,290 V95"/>
+        <path id="w-bg1" class="w thin" d="M660,290 V225"/>
+        <path id="w-bg2" class="w thin" d="M875,290 V225"/>
+        <path id="w-tg2" class="w thin" d="M900,330 H920 V95"/>
+        <path id="w-ls" class="w thin" d="M712,95 V290"/>
+        <path id="w-is" class="w thin" d="M1005,170 H995 V345 H993 a8,8 0 0 0 -16,0 H958 a8,8 0 0 0 -16,0 H900"/>
+        <path id="w-fb" class="w thin" d="M950,145 V395"/>
+        <path id="w-fb2" class="w thin" d="M905,412 H860 V380"/>
+        <path id="w-cc" class="w thin" d="M600,410 V380"/>
+        <!-- output protection -->
+        <path id="w-ts" class="w thin" d="M1005,452 H993 a8,8 0 0 0 -16,0 H800"/>
+        <path id="w-tq7" class="w thin" d="M760,485 V545 H845 V565"/>
+        <path id="w-l3" class="w thin" d="M812,452 V515 H720"/>
+        <path class="gnd" d="M497,158 H513 M500,162 H510 M503,166 H507"/>
+        <path class="gnd" d="M604,222 H620 M607,226 H617 M610,230 H614"/>
+        <path class="gnd" d="M820,222 H836 M823,226 H833 M826,230 H830"/>
 
+        <text class="rail" x="375" y="38" text-anchor="middle">CSRC</text>
+        <text class="rail" x="505" y="60" text-anchor="middle">VIN_P</text>
+        <text class="rail" x="660" y="40" text-anchor="middle">SW1</text>
+        <text class="rail" x="875" y="40" text-anchor="middle">SW2</text>
+        <text class="rail" x="1040" y="40" text-anchor="middle">VOUT_C</text>
+        <text class="rail" x="240" y="108" text-anchor="middle">VIN_F</text>
+        <text class="rail" x="500" y="611" text-anchor="middle">GND plane (puro bottom layer)</text>
+
+        <g class="node" id="n-vin"><rect x="15" y="45" width="90" height="50" rx="6"/><text class="nm" x="60" y="66">Input +</text><text class="sub" x="60" y="83">9–36 V</text></g>
+        <g class="node" id="n-j1p"><rect x="125" y="50" width="55" height="40" rx="6"/><text class="nm" x="152.5" y="67">J1</text><text class="sub" x="152.5" y="82">+</text></g>
+        <g class="node" id="n-f1"><rect x="200" y="50" width="65" height="40" rx="6"/><text class="nm" x="232.5" y="67">F1 fuse</text><text class="sub" x="232.5" y="82">15 A</text></g>
+        <g class="node" id="n-q1"><rect x="285" y="45" width="80" height="50" rx="6"/><text class="nm" x="325" y="66">Q1 · IN</text><text class="st" id="st-q1" x="325" y="84">OFF</text></g>
+        <g class="node" id="n-q2"><rect x="385" y="45" width="80" height="50" rx="6"/><text class="nm" x="425" y="66">Q2 · DIODE</text><text class="st" id="st-q2" x="425" y="84">OFF</text></g>
+        <g class="node" id="n-div"><rect x="245" y="115" width="60" height="30" rx="5"/><text class="sub" x="275" y="128">R5·R6·R7</text><text class="sub" x="275" y="140">UV / OV</text></g>
+        <g class="node" id="n-u2"><rect x="255" y="170" width="190" height="60" rx="8"/><text class="nm" x="350" y="190">U2 · LM74930</text><text class="sub" x="350" y="207">UV 8.2 V · OV 42.9 V</text><text class="sub" x="350" y="222">ulta hole Q2 bondho</text></g>
+        <g class="node" id="n-led2"><rect x="20" y="175" width="90" height="40" rx="6"/><text class="nm" x="65" y="192">LED2</text><text class="sub" x="65" y="207">red IN</text></g>
+        <g class="node" id="n-cin"><rect x="475" y="115" width="60" height="30" rx="5"/><text class="sub" x="505" y="128">C7 · C8</text><text class="sub" x="505" y="140">C11</text></g>
+        <g class="node" id="n-q3"><rect x="545" y="45" width="80" height="50" rx="6"/><text class="nm" x="585" y="66">Q3 · A</text><text class="st" id="st-q3" x="585" y="84">OFF</text></g>
+        <g class="node" id="n-q4"><rect x="625" y="175" width="70" height="50" rx="6"/><text class="nm" x="660" y="196">Q4 · B</text><text class="st" id="st-q4" x="660" y="214">OFF</text></g>
+        <g class="node" id="n-r15"><rect x="680" y="50" width="65" height="40" rx="6"/><text class="nm" x="712.5" y="67">R15</text><text class="sub" x="712.5" y="82">3 mΩ</text></g>
+        <g class="node" id="n-l1"><rect x="765" y="45" width="90" height="50" rx="6"/><text class="nm" x="810" y="66">L1 10 µH</text><text class="sub" x="810" y="83">inductor</text></g>
+        <g class="node" id="n-q5"><rect x="840" y="175" width="70" height="50" rx="6"/><text class="nm" x="875" y="196">Q5 · C</text><text class="st" id="st-q5" x="875" y="214">OFF</text></g>
+        <g class="node" id="n-q6"><rect x="905" y="45" width="80" height="50" rx="6"/><text class="nm" x="945" y="66">Q6 · D</text><text class="st" id="st-q6" x="945" y="84">OFF</text></g>
+        <g class="node" id="n-cout"><rect x="932" y="115" width="68" height="30" rx="5"/><text class="sub" x="966" y="128">C12–C14</text><text class="sub" x="966" y="140">C18 · D15</text></g>
+        <g class="node" id="n-r31"><rect x="1005" y="150" width="70" height="40" rx="6"/><text class="nm" x="1040" y="167">R31</text><text class="sub" x="1040" y="182">12 mΩ</text></g>
+        <g class="node" id="n-f2"><rect x="1005" y="215" width="70" height="40" rx="6"/><text class="nm" x="1040" y="232">F2 fuse</text><text class="sub" x="1040" y="247">10 A</text></g>
+        <g class="node" id="n-j2p"><rect x="1005" y="280" width="70" height="35" rx="6"/><text class="nm" x="1040" y="302">J2 +</text></g>
+        <g class="node" id="n-load"><rect x="1005" y="340" width="70" height="70" rx="6"/><text class="nm" x="1040" y="365">Load</text><text class="sub" x="1040" y="382">1.6–36 V</text><text class="st" id="st-load" x="1040" y="398">≤ 8.33 A</text></g>
+        <g class="node" id="n-j2m"><rect x="1005" y="435" width="70" height="35" rx="6"/><text class="nm" x="1040" y="457">J2 −</text></g>
+        <g class="node" id="n-u1"><rect x="560" y="290" width="340" height="90" rx="8"/><text class="nm" x="730" y="314">U1 · LT8390</text><text class="sub" x="730" y="334">CV: FB 1.00 V · CC: ISP−ISN 100 mV</text><text class="sub" x="730" y="351">peak limit: LSP−LSN 50 mV (R15)</text><text class="sub" x="730" y="368">300 kHz · TG1 BG1 BG2 TG2</text></g>
+        <g class="node" id="n-rv1"><rect x="905" y="395" width="57" height="34" rx="5"/><text class="sub" x="933.5" y="409">RV1·R25</text><text class="sub" x="933.5" y="422">CV</text></g>
+        <g class="node" id="n-rv2"><rect x="560" y="410" width="80" height="34" rx="5"/><text class="sub" x="600" y="424">RV2 · TH1</text><text class="sub" x="600" y="437">CC</text></g>
+        <g class="node" id="n-trip"><rect x="640" y="435" width="160" height="50" rx="6"/><text class="nm" x="720" y="455">Q9 · Q11 · Q8</text><text class="sub" x="720" y="472">ulta battery trip</text></g>
+        <g class="node" id="n-led3"><rect x="640" y="500" width="80" height="34" rx="5"/><text class="sub" x="680" y="514">LED3</text><text class="sub" x="680" y="527">red OUT</text></g>
+        <g class="node" id="n-q7"><rect x="820" y="565" width="80" height="50" rx="6"/><text class="nm" x="860" y="586">Q7 · OUT−</text><text class="st" id="st-q7" x="860" y="604">OFF</text></g>
+        <g class="node" id="n-j1m"><rect x="125" y="570" width="55" height="40" rx="6"/><text class="nm" x="152.5" y="587">J1</text><text class="sub" x="152.5" y="602">−</text></g>
+        <g class="node" id="n-vinm"><rect x="15" y="565" width="90" height="50" rx="6"/><text class="nm" x="60" y="594">Input −</text></g>
+      </svg>
+    </div>
+    <figcaption class="legend">
+      <span style="color:var(--power)"><i></i>power current (mota rasta)</span>
+      <span style="color:var(--fly)"><i></i>inductor-er jome thaka current</span>
+      <span style="color:var(--ctrl)"><i class="dash"></i>gate / control</span>
+      <span style="color:var(--sense)"><i class="dot"></i>mapa (sense)</span>
+      <span style="color:var(--fault)"><i></i>fault current, red LED</span>
+    </figcaption>
+  </figure>
+  <div class="panel" id="panel"><div class="kind" id="s-kind"></div><h3 id="s-title"></h3><p id="s-body" style="color:var(--fg)"></p><dl class="stats" id="s-stats"></dl></div>
   <h2>Ek line-e rasta</h2>
   <div class="panel" style="gap:12px">
     <div><div class="kind">Main power (buck, A on)</div><div class="chain" id="ch1"></div></div>
@@ -159,74 +310,6 @@ const P = {}; DATA.parts.forEach(p => P[p.ref] = p);
 const pad = (ref, n) => { const p = P[ref]; const q = p && p.pads.find(x => x[0] === String(n)); return q ? [q[2], q[3]] : (p ? [p.x, p.y] : [0, 0]); };
 const ctr = ref => [P[ref].x, P[ref].y];
 
-/* ---------------- current-flow steps (board mm; polylines follow the copper, not every bend) ---------------- */
-const pwrIn = [pad('J1', 2), [5.5, 31.2], pad('F1', 1), pad('F1', 2), [12.5, 35.4], pad('Q1', 5), pad('Q1', 2), pad('Q2', 2), pad('Q2', 5), [17.0, 26.6], pad('C8', 1), pad('C7', 1), [16.9, 18.4], pad('Q3', 5)];
-const sw1 = [pad('Q3', 2), [17.5, 11.2], [24.3, 11.2], pad('R15', 1), pad('R15', 2), [29.6, 19.6], [32.0, 23.0], pad('L1', 1)];
-const toOut = [pad('L1', 2), [45.7, 20.0], [45.7, 13.0], [49.6, 9.4], [55.9, 9.4], pad('Q6', 2), pad('Q6', 5), [53.9, 17.5], pad('C12', 1), pad('C13', 1), pad('C14', 1), [56.2, 27.5], pad('R31', 1), pad('R31', 2), [62.6, 32.2], pad('F2', 1), pad('F2', 2), [58.4, 37.4], [62.8, 39.2], pad('J2', 2)];
-const loadRet = [pad('J2', 2), [70.4, 39.2], [70.4, 44.28], pad('J2', 1), [56.0, 44.0], pad('Q7', 5), pad('Q7', 2)];
-const gndRet = [pad('Q7', 2), [40.0, 40.0], [28.0, 31.0], [13.0, 22.0], [8.5, 22.52], pad('J1', 1)];
-const S = [
- { id: 'buckA', btn: 'Buck: A on', kind: 'Input > output, jemon 24 V → 12 V',
-   paths: [['power', pwrIn], ['power', sw1], ['fly', [pad('L1', 1), pad('L1', 2)]], ['power', toOut], ['power', loadRet], ['ret', gndRet]],
-   parts: ['J1', 'F1', 'Q1', 'Q2', 'C7', 'C8', 'Q3', 'R15', 'L1', 'Q6', 'C12', 'C13', 'C14', 'R31', 'F2', 'J2', 'Q7'],
-   text: 'Switch A (Q3) on, D (Q6) shob shomoy on, B (Q4) ar C (Q5) off. Current input theke shoja L1 diye output-e jay, L1-e current bare.',
-   steps: ['J1 + → F1 15 A fuse → Q1 (input switch) → Q2 (ideal diode)', 'VIN_P → C7/C8 (input cap) → Q3 → SW1', 'R15 3 mΩ: ekhane U1 inductor current mape', 'L1 10 µH → SW2 → Q6 → VOUT_C → C12–C14, C18', 'R31 12 mΩ: ekhane U1 output current mape (CC)', 'F2 → J2 + → load → J2 − → Q7 → GND plane → J1 −'],
-   res: 'Prottek cycle 3.3 µs (300 kHz). A on thakar shomoy = duty × 3.3 µs; 24 → 12 V-e duty ~50 %.' },
- { id: 'buckB', btn: 'Buck: A off', kind: 'Same buck mode, cycle-er baki ongsho',
-   paths: [['ret', [pad('C8', 2), [19.8, 19.0], pad('Q4', 2)]], ['fly', [pad('Q4', 2), pad('Q4', 5), [24.3, 11.2], pad('R15', 1), pad('R15', 2), [29.6, 19.6], [32.0, 23.0], pad('L1', 1), pad('L1', 2)]], ['power', toOut], ['power', loadRet], ['ret', [pad('Q7', 2), [40.0, 40.0], [28.0, 31.0], [21.0, 21.5], pad('C8', 2)]]],
-   parts: ['Q4', 'R15', 'L1', 'Q6', 'C12', 'C13', 'C14', 'R31', 'F2', 'J2', 'Q7'],
-   text: 'Q3 bondho hole L1-er current thamte pare na. Q4 (switch B) on hoye GND theke current dey; L1 tar jome thaka shokti diye output chalay.',
-   steps: ['GND → Q4 (B) → SW1 → R15 → L1', 'L1 → Q6 → output → load', 'Load → J2 − → Q7 → GND → abar Q4'],
-   res: 'A ar B kokhono ekshathe on hoy na (LT8390-er dead time). Q4 na thakle SW1 negative-e nemeto, Q3-er body diode ar EMI-te loss.' },
- { id: 'boostC', btn: 'Boost: C on', kind: 'Input < output, jemon 12 V → 24 V',
-   paths: [['power', pwrIn], ['power', sw1], ['fly', [pad('L1', 1), pad('L1', 2), [45.7, 20.0], [45.7, 13.0], pad('Q5', 5)]], ['ret', [pad('Q5', 2), [49.0, 18.5], pad('C12', 2), [42.0, 30.0], [28.0, 31.0], [13.0, 22.0], [8.5, 22.52], pad('J1', 1)]], ['power', [pad('C13', 1), [56.2, 27.5], pad('R31', 1), pad('R31', 2), [62.6, 32.2], pad('F2', 1), pad('F2', 2), [58.4, 37.4], [62.8, 39.2], pad('J2', 2)]], ['power', loadRet]],
-   parts: ['J1', 'F1', 'Q1', 'Q2', 'Q3', 'R15', 'L1', 'Q5', 'C12', 'C13', 'C14', 'C18', 'J2', 'Q7'],
-   text: 'A (Q3) on, C (Q5) on: input sorasori L1-er dui matha jure dey, L1-e current (ar shokti) jome. Output-e ei shomoy kichu jay na; output cap (C12–C14, C18) load chalay.',
-   steps: ['J1 → F1 → Q1 → Q2 → Q3 → R15 → L1', 'L1 → SW2 → Q5 (C) → GND', 'Output cap → R31 → F2 → load (cap theke)'],
-   res: 'C on-er shomoy L1-er current R15-e mapa hoy; 50 mV (3 mΩ-e 16.7 A) par hole U1 cycle bondho kore.' },
- { id: 'boostD', btn: 'Boost: C off', kind: 'Same boost mode, cycle-er baki ongsho',
-   paths: [['power', pwrIn], ['power', sw1], ['fly', [pad('L1', 1), pad('L1', 2)]], ['power', toOut], ['power', loadRet], ['ret', gndRet]],
-   parts: ['Q3', 'L1', 'Q6', 'C12', 'C13', 'C14', 'C18', 'R31', 'F2', 'J2', 'Q7'],
-   text: 'C bondho, D (Q6) on: L1-er jome thaka shokti input voltage-er shathe jog hoye output-e jay. Tai output input-er cheye beshi.',
-   steps: ['Input → Q3 → R15 → L1 (input + L1-er voltage)', 'L1 → Q6 (D) → C12–C14, C18 → R31 → F2 → J2 +', 'Load → J2 − → Q7 → GND → J1 −'],
-   res: '12 → 24 V-e C-er duty ~50 %. 9 V input-e 80 W-e input current ~9.5 A, tai F1 15 A ar 2 oz copper.' },
- { id: 'ctrl', btn: 'Control ar mapa', kind: 'U1 LT8390 kibhabe dekhe ar chalay',
-   paths: [['sense', [pad('NT1', 1), [30.0, 13.0], [31.5, 5.38], pad('U1', 5)]], ['sense', [pad('NT2', 1), [30.6, 15.7], [32.2, 6.03], pad('U1', 6)]],
-           ['sense', [pad('NT3', 1), [58.2, 28.4], [50.5, 4.6], pad('R28', 1), pad('R28', 2), [50.85, 3.6], [36.0, 12.6], pad('U1', 14)]], ['sense', [pad('NT4', 1), [60.9, 28.6], [53.6, 4.6], pad('R29', 1), pad('R29', 2), [54.65, 3.6], [41.5, 11.2], pad('U1', 15)]],
-           ['sense', [pad('Q6', 5), [55.3, 19.6], [30.5, 44.0], pad('RV1', 1), pad('RV1', 2), [30.8, 32.0], pad('R46', 1), pad('R46', 2), [40.9, 13.0], pad('U1', 19)]],
-           ['ctrl', [pad('U1', 4), [31.0, 4.73], [20.0, 9.5], pad('Q3', 4)]], ['ctrl', [pad('U1', 1), [33.2, 2.4], [24.5, 9.0], [24.5, 16.6], pad('Q4', 4)]],
-           ['ctrl', [pad('U1', 25), [39.4, 4.72], [38.4, 3.73], [36.51, 3.73], [37.5, 0.7], [58.6, 0.7], [58.6, 10.2], [58.05, 11.09], [57.46, 11.67], [54.36, 11.67], pad('Q6', 4)]],
-           ['ctrl', [pad('U1', 28), [40.96, 1.99], [45.9, 1.94], [48.6, 2.4], [49.7, 3.51], [52.18, 6.0], [52.18, 15.48], pad('Q5', 4)]],
-           ['ctrl', [pad('RV2', 1), [41.2, 40.0], [30.0, 14.0], pad('R26', 2), [33.0, 10.6], pad('U1', 13)]]],
-   parts: ['U1', 'R15', 'NT1', 'NT2', 'R31', 'NT3', 'NT4', 'R28', 'R29', 'RV1', 'R25', 'R46', 'RV2', 'R26', 'TH1', 'Q3', 'Q4', 'Q5', 'Q6'],
-   text: 'U1 tin ta jinish mape ar char ta switch chalay. Sense line-gulo shunt-er pad-er bhitor theke ("Kelvin" net-tie NT1–NT4) neya, tai power current ei tar diye jay na.',
-   steps: ['R15 (NT1/NT2 → LSP/LSN): inductor current, peak limit', 'R31 (NT3/NT4 → R28/R29 10 Ω → ISP/ISN): output current, CC', 'RV1 + R25 → FB (1.00 V): output voltage, CV', 'RV2 + R26/R27 + TH1 → CTRL: CC koto A', 'TG1/BG1 → Q3/Q4, TG2/BG2 → Q6/Q5 (gate drive)'],
-   res: 'CV ar CC duto loop eki VC pin-e jay; je limit aage pouchay, shei control kore. TG2-er gate track hat-diye route kora, 44 mm.' },
- { id: 'inrev', btn: 'Input ulta', kind: 'Fault: J1-e + ar − ulta (−60 V porjonto)',
-   paths: [['fault', [pad('J1', 1), [8.0, 30.0], [10.0, 43.0], pad('D5', 1), pad('D5', 3), [12.6, 47.0], pad('R11', 1), pad('R11', 2), [12.0, 43.0], pad('R12', 1), pad('R12', 2), [3.0, 30.5], pad('LED2', 2), pad('LED2', 1), [3.0, 34.0], [9.0, 24.0], pad('D7', 1), pad('D7', 3), [14.2, 31.0], pad('F1', 2), pad('F1', 1), [5.5, 31.2], pad('J1', 2)]],
-           ['power', [pad('J1', 2), [5.5, 31.2], pad('F1', 1), pad('F1', 2), [12.5, 35.4], pad('Q1', 5), pad('Q1', 2), pad('Q2', 2)]]],
-   block: [pad('Q2', 2)],
-   parts: ['J1', 'Q2', 'U2', 'D5', 'R11', 'R12', 'LED2', 'D7'],
-   text: 'Q2-er body diode ulta dike; LM74930 (U2) Q2-er gate bondho rakhe. Tai main path-e (⊘ chinho) current atke jay, converter kichu pay na.',
-   steps: ['Main path: J1 → F1 → Q1 → Q2-te atke jay', 'Red IN LED: GND → D5 → R11 + R12 (11.2 kΩ) → LED2 → D7 → VIN−', '12 V ulta: LED current ~0.8 mA, 60 V-e 5 mA'],
-   res: 'Fol: red IN LED jole, current nei, kichu gorom hoy na. Thik kore lagale abar chalu.' },
- { id: 'outrev', btn: 'Output-e battery ulta', kind: 'Fault: battery + J2 −-e (35 V porjonto)',
-   paths: [['fault', [pad('J2', 1), [56.0, 44.0], pad('Q7', 5), pad('Q7', 2), [44.0, 30.0], pad('D15', 2), pad('D15', 1), [57.0, 22.0], pad('R31', 1), pad('R31', 2), [62.6, 32.2], pad('F2', 1), pad('F2', 2), [58.4, 37.4], [62.8, 39.2], pad('J2', 2)]],
-           ['sense', [pad('R31', 1), [54.6, 30.6], pad('Q9', 2)]], ['sense', [pad('J2', 2), [47.0, 36.0], pad('D13', 1), pad('D13', 2), [51.8, 37.3], pad('D16', 2), pad('Q11', 2)]],
-           ['ctrl', [pad('Q9', 3), pad('R38', 1), pad('R38', 2), [44.5, 39.5], pad('R34', 2), pad('Q8', 1)]], ['ctrl', [pad('Q8', 3), [44.7, 41.0], pad('Q7', 4)]],
-           ['fault', [pad('J2', 1), [52.0, 39.6], pad('D12', 2), pad('D12', 1), [44.8, 44.0], pad('R43', 1), pad('R43', 2), pad('LED3', 2), pad('LED3', 1), [49.0, 47.6], [64.0, 47.6], [67.4, 41.0], pad('J2', 2)]]],
-   parts: ['J2', 'Q7', 'D15', 'R31', 'Q9', 'R36', 'R37', 'Q11', 'D13', 'D16', 'Q8', 'Q10', 'D12', 'R43', 'LED3'],
-   text: 'Prothom kichu µs Q7 on thake, tai battery-r current Q7 → GND → D15 (ar Q5/Q6-er body diode) → R31 → F2 diye ghore. Q9 ba Q11 sheta dhore Q8 on kore, Q8 Q7-er gate niche tane.',
-   steps: ['Q9: R31-e 1.0 V (83 A) hole', 'Q11: OUT+ −1.9 V-er niche namle', 'Q8 → QLSG low → Q7 off, 1–6 µs-e', 'Q10 battery thakakalin Q7 bondho dhore rakhe', 'Tarpor shudhu red OUT LED: J2 − → D12 → R43 10 kΩ → LED3 → J2 +'],
-   res: 'Peak 52–184 A, kichu µs; Q7 avalanche ≤ 19 mJ (rating 274 mJ). Battery khulle abar normal. OUT− ar VIN− bairer dike jorle ei protection kaj kore na.' },
- { id: 'short', btn: 'Output short', kind: 'Fault: J2 + ar − sorasori jora',
-   paths: [['power', toOut], ['fault', [pad('J2', 2), [69.0, 41.7], pad('J2', 1)]], ['power', [pad('J2', 1), [56.0, 44.0], pad('Q7', 5), pad('Q7', 2)]], ['ret', gndRet],
-           ['sense', [pad('NT3', 1), [58.2, 28.4], [50.5, 4.6], pad('R28', 1)]], ['sense', [pad('NT4', 1), [60.9, 28.6], [53.6, 4.6], pad('R29', 1)]]],
-   parts: ['R31', 'NT3', 'NT4', 'R28', 'R29', 'U1', 'J2', 'F2'],
-   text: 'Short-e output voltage 0 hoye jay, kintu U1 R31-er voltage (ISP − ISN) dekhe current CC setting-e (max 8.33 A) dhore rakhe.',
-   steps: ['R31 12 mΩ × 8.33 A = 100 mV: CC full scale', 'Hothat 62.5 A (R31-e 0.75 V, ISOC) hole U1 shob switch bondho kore, abar soft-start', 'F2 10 A: shudhu MOSFET short hole kate'],
-   res: 'Fol: CC limit-e current, green LED on, board halka gorom. Short khulle abar normal.' }
-];
 const COLOR = { power: 'var(--power)', ret: 'var(--ret)', ctrl: 'var(--ctrl)', sense: 'var(--sense)', fault: 'var(--fault)', fly: 'var(--fly)' };
 const WIDTH = { power: 0.85, ret: 0.6, ctrl: 0.34, sense: 0.3, fault: 0.6, fly: 0.95 };
 
@@ -270,16 +353,85 @@ function drawBoard(svg, opt) {
   });
 }
 
-const stepsEl = document.getElementById('steps'), panel = document.getElementById('panel'), fsvg = document.getElementById('flowsvg');
-function showStep(i) {
-  const s = S[i];
-  [...stepsEl.children].forEach((b, k) => b.setAttribute('aria-pressed', k === i ? 'true' : 'false'));
-  drawBoard(fsvg, { paths: s.paths, parts: s.parts, block: s.block,
-    marks: s.id === 'inrev' ? [[1.0, 21.0, '+?', 'var(--fault)']] : s.id === 'outrev' ? [[64.6, 49.6, '+ batt (ulta)', 'var(--fault)']] : s.id === 'short' ? [[64.2, 49.6, 'short', 'var(--fault)']] : [[66.0, 49.6, 'load', '#fff']] });
-  panel.innerHTML = `<div class="kind">${s.kind}</div><h3>${s.btn}</h3><p style="color:var(--fg)">${s.text}</p><ol>${s.steps.map(x => `<li>${x}</li>`).join('')}</ol><div class="res${['inrev', 'outrev', 'short'].includes(s.id) ? ' bad' : ''}">${s.res}</div>`;
-}
-S.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = s.btn; b.onclick = () => showStep(i); stepsEl.appendChild(b); });
-showStep(0);
+/* ---------------- current-flow block diagram (works without the 3D library) ---------------- */
+(function () {
+  const $ = id => document.getElementById(id);
+  const IN = ['p1', 'p2', 'p3', 'p4', 'p5', 'cin'];                 // input up to VIN_P
+  const OUT = ['p10', 'p11', 'p12', 'p13', 'g4', 'g3', 'g2'];     // R31 → load → Q7 → GND → input −
+  const SENSE = ['ls', 'is', 'fb', 'fb2', 'cc'];
+  const FRONT = ['hg', 'dg'];
+  const base = { main: [], fly: [], ctrl: [], test: [], fault: [], live: [], flyn: [], ctl: [], lit: [], bad: [], on: [], st: {} };
+  const step = o => Object.assign({}, base, o);
+  const STEPS = {
+    plug: step({ main: IN.concat(['cing']), test: ['vf', 'div'], ctrl: FRONT, live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin'], ctl: ['u2'], on: ['q1', 'q2'], st: { q1: 'ON (dhire)' },
+      kind: 'Plug in', title: 'Input lagano: age U2 check kore, tarpor Q1 dhire on',
+      body: 'U2 (LM74930) R5/R6/R7 diye input voltage mape. 8.2 V-er upore ar 42.9 V-er niche thakle Q1 dhire on kore (C5 3.3 nF, R4 100 Ω gate-ke dhire tole), tai input cap (C7, C8, C11, mot 113 µF) spark chhara charge hoy. Q2 ideal diode hishebe on. VIN_P 7.05 V-e uthle U1 (EN/UVLO) chalu hoy, 10.7 ms soft-start-e output dhire uthe.',
+      stats: [['Inrush current', '1.3–2.6 A'], ['Charge time (36 V)', '1.6 ms'], ['U2 chalu / bondho', '8.2 V / 7.5 V'], ['U1 EN chalu / bondho', '7.05 V / 6.48 V'], ['Soft-start', '10.7 ms']] }),
+    buckA: step({ main: IN.concat(['p6a', 'p6b', 'p7', 'p8a', 'p8b', 'p9a', 'p9b'], OUT), ctrl: FRONT.concat(['tg1', 'tg2']), test: SENSE,
+      live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin', 'q3', 'r15', 'q6', 'cout', 'r31', 'f2', 'j2p', 'load', 'j2m', 'q7', 'j1m', 'vinm'], flyn: ['l1'], ctl: ['u1', 'u2'], on: ['q1', 'q2', 'q3', 'q6', 'q7'],
+      kind: 'Buck · input > output', title: 'Buck, A on: input theke shoja L1 diye output',
+      body: 'Q3 (A) ar Q6 (D) on, Q4 (B) ar Q5 (C) off. Current: Input + → J1 → F1 → Q1 → Q2 → VIN_P → Q3 → R15 → L1 → Q6 → output cap → R31 → F2 → J2 + → load → J2 − → Q7 → GND plane → J1 − → Input −. L1-er current bare. U1 R15-e peak current mape, R31-e output current, RV1/R25 diye output voltage.',
+      stats: [['Udaharon', '24 V → 12 V, 6.67 A (80 W)'], ['Input current', '3.5 A'], ['L1 current', '6.67 A ± 1.0 A (peak 7.67 A)'], ['A on (duty)', '50 % of 3.3 µs'], ['Efficiency (calc)', '95.3 %, loss 3.9 W']] }),
+    buckB: step({ fly: ['q4g', 'sw1', 'p6b', 'p7', 'p8a'], main: ['p8b', 'p9a', 'p9b'].concat(OUT.slice(0, 6)), ctrl: FRONT.concat(['bg1', 'tg2']), test: SENSE,
+      live: ['q6', 'cout', 'r31', 'f2', 'j2p', 'load', 'j2m', 'q7'], flyn: ['q4', 'r15', 'l1'], ctl: ['u1', 'u2'], on: ['q1', 'q2', 'q4', 'q6', 'q7'],
+      kind: 'Buck · cycle-er baki ongsho', title: 'Buck, A off: L1 nije current chaliye jay',
+      body: 'Q3 bondho hole L1-er current hothat thamte pare na. Q4 (B) on hoye GND theke current dey: GND → Q4 → SW1 → R15 → L1 → Q6 → output → load → Q7 → GND. L1-er jome thaka shokti ei somoy load chalay, current kome. A ar B kokhono ekshathe on hoy na (LT8390-er dead time).',
+      stats: [['A off somoy (24 → 12 V)', '~1.65 µs'], ['L1 current', '7.67 A → 5.67 A'], ['Q4 na thakle', 'SW1 negative-e name, beshi loss ar EMI']] }),
+    boostC: step({ main: IN.concat(['p6a', 'p6b', 'p7', 'p8a', 'sw2']), fly: [], test: SENSE, ctrl: FRONT.concat(['tg1', 'bg2']),
+      fault: [], live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin', 'q3', 'r15', 'q5'], flyn: ['l1'], ctl: ['u1', 'u2'], on: ['q1', 'q2', 'q3', 'q5', 'q7'],
+      extraMain: ['q5g', 'cor', 'p9b'].concat(OUT), extraLive: ['cout', 'r31', 'f2', 'j2p', 'load', 'j2m', 'q7', 'j1m', 'vinm'],
+      kind: 'Boost · input < output', title: 'Boost, C on: L1-e current jomano',
+      body: 'Q3 (A) ar Q5 (C) on: input L1-er dui matha GND-er sathe jure dey, L1-e current ar shokti jome. Ei somoy output-e input theke kichu jay na; output cap (C12–C14, C18) load chalay. R15-e current 50 mV (3 mΩ-e 16.7 A) par hole U1 cycle bondho kore.',
+      stats: [['Udaharon', '12 V → 24 V, 3.33 A (80 W)'], ['Input current', '6.96 A'], ['L1 current', '6.96 A ± 1.0 A (peak 7.96 A)'], ['C on (duty)', '50 % of 3.3 µs'], ['Efficiency (calc)', '95.8 %, loss 3.5 W']] }),
+    boostD: step({ main: IN.concat(['p6a', 'p6b', 'p7', 'p8a', 'p8b', 'p9a', 'p9b'], OUT), ctrl: FRONT.concat(['tg1', 'tg2']), test: SENSE,
+      live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin', 'q3', 'r15', 'q6', 'cout', 'r31', 'f2', 'j2p', 'load', 'j2m', 'q7', 'j1m', 'vinm'], flyn: ['l1'], ctl: ['u1', 'u2'], on: ['q1', 'q2', 'q3', 'q6', 'q7'],
+      kind: 'Boost · cycle-er baki ongsho', title: 'Boost, C off: input + L1 mile output',
+      body: 'Q5 bondho, Q6 (D) on. L1-er jome thaka shokti input voltage-er shathe jog hoye Q6 diye output cap ar load-e jay, tai output input-er cheye beshi. Prottek cycle 3.3 µs-e C on → C off ghure ashe.',
+      stats: [['12 → 24 V-e', 'L1 12 V + input 12 V'], ['Worst case (9 → 35 V)', 'input 9.5 A, duty 74 %, η 93.4 %'], ['Max peak (L1, R15)', '≥ 13.3 A limit (boost)']] }),
+    inrev: step({ fault: ['lin1', 'lin2', 'revret'], ctrl: ['dg'], lit: ['led2'], bad: ['q2'], ctl: ['u2'], st: { q2: 'BLOCK' },
+      kind: 'Fault · J1-e plus ar minus ulta', title: 'Input ulta: Q2 atkay, shudhu red IN LED jole',
+      body: 'Q2-er body diode ulta dike, ar U2 Q2-er gate (DGATE) bondho rakhe, tai main path-e current jete pare na; converter kichu pay na. Shudhu chhoto LED current: GND (ekhon +) → D5 → R11 + R12 (11.2 kΩ) → LED2 → D7 → VIN_F → F1 → J1 + (ekhon −). D1 TVS bidirectional, tai −60 V-eo leak kore na.',
+      stats: [['Converter current', '0 A'], ['LED2 current', '0.8 mA (12 V) · 5 mA (60 V)'], ['Safe porjonto', '−60 V'], ['Thik kore lagale', 'abar chalu']] }),
+    ov: step({ test: ['vf', 'div'], ctrl: ['hg', 'flt'], main: ['p1', 'p2', 'p3'], live: ['vin', 'j1p', 'f1'], bad: ['q1'], lit: ['led2'], ctl: ['u2'], st: { q1: 'OFF (OV)' },
+      kind: 'Fault · input 43–60 V', title: 'Input beshi voltage: Q1 kete deya',
+      body: 'R5/R6/R7 divider-er OV pin 0.60 V par hole U2 Q1-er gate (HGATE) niche tane, Q1 off. Converter ar output bondho, FLT pin red IN LED jalay. Input 39.4 V-er niche namle nije abar chalu. 36 V supply kokhono kate na.',
+      stats: [['Kate', '42.9 V (worst 41.9–46.0 V)'], ['Abar chalu', '39.4 V (worst ≥ 37.4 V)'], ['Safe porjonto', '+60 V DC (TVS clamp 96.8 V)']] }),
+    short: step({ main: IN.concat(['p6a', 'p6b', 'p7', 'p8a', 'p8b', 'p9a', 'p9b', 'p10', 'p11', 'g4', 'g3', 'g2']), fault: ['short'], ctrl: FRONT.concat(['tg1', 'tg2']), test: ['is', 'ls'],
+      live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin', 'q3', 'r15', 'q6', 'cout', 'r31', 'f2', 'j2p', 'j2m', 'q7', 'j1m', 'vinm'], flyn: ['l1'], bad: ['load'], ctl: ['u1', 'u2'], on: ['q1', 'q2', 'q3', 'q6', 'q7'], st: { load: 'SHORT' },
+      kind: 'Fault · J2 plus ar minus jora', title: 'Output short: U1 current CC-te dhore rakhe',
+      body: 'Output voltage 0 hoye jay, kintu U1 R31-er voltage (ISP − ISN) mepe current CC setting-e dhore rakhe. Hothat boro current-e (R31-e 0.75 V = 62.5 A) U1 shob switch bondho kore abar soft-start theke shuru kore. Short khulle abar normal.',
+      stats: [['Short current', 'CC setting, max 8.33 A'], ['Instant trip (ISOC)', '62.5 A → restart'], ['F2 10 A', 'shudhu MOSFET nosto hole kate']] }),
+    batrev: step({ fault: ['g4', 'bat', 'cor', 'p9b', 'p10', 'p11', 'l3'], test: ['ts'], ctrl: ['tq7'], live: [], bad: ['q7'], lit: ['led3', 'cout'], ctl: ['trip'], st: { q7: 'OFF (trip)' },
+      kind: 'Fault · battery-r + J2 minus pin-e (≤ 35 V)', title: 'Output-e battery ulta: Q7 1–6 µs-e off',
+      body: 'Prothom kichu µs Q7 on thake, tai battery-r current J2 − → Q7 → GND plane → D15 (ar Q5/Q6-er body diode) → VOUT_C → R31 → F2 → J2 + diye ghore. Q9 (R31-e 1.0 V = 83 A) ba Q11 (OUT+ −1.9 V-er niche) sheta dhore Q8 on kore, Q8 Q7-er gate niche tane. Tarpor Q10 battery thaka obdhi Q7 bondho rakhe, shudhu LED3 jole (D12 → R43 10 kΩ → LED3).',
+      stats: [['Peak current', '52–184 A, kichu µs'], ['Udaharon: 12.6 V, CV 14.4 V', 'Q9 1.4 µs-e trip, 119 A'], ['Q7 avalanche', '≤ 19 mJ (rating 274 mJ)'], ['LED3 current', '0.9 mA (12 V)'], ['Shorto', 'OUT− ar VIN− bairer dike jora jabe na']] }),
+    hot: step({ main: IN.concat(['p6a', 'p6b', 'p7', 'p8a', 'p8b', 'p9a', 'p9b'], OUT), ctrl: FRONT.concat(['tg1', 'tg2']), test: ['cc', 'is'],
+      live: ['vin', 'j1p', 'f1', 'q1', 'q2', 'cin', 'q3', 'r15', 'q6', 'cout', 'r31', 'f2', 'j2p', 'load', 'j2m', 'q7', 'j1m', 'vinm'], flyn: ['l1'], bad: ['rv2'], ctl: ['u1'], on: ['q1', 'q2', 'q3', 'q6', 'q7'], st: { load: 'current kome' },
+      kind: 'Fault · board beshi gorom', title: 'Beshi gorom: TH1 CC current komay',
+      body: 'TH1 (PTC) Q3/Q4-er pashe, CTRL divider-er upore boshano. Gorom hole tar resistance bare, CTRL voltage kome, tai U1 output current komay. Aro gorom hole CTRL 0.25 V-er niche, switching bondho; thanda hole nije chalu.',
+      stats: [['105 °C', 'TH1 4.7 kΩ, max 8.33 A thake'], ['120 °C', 'TH1 47 kΩ, max 5.39 A'], ['~130 °C', 'switching bondho'], ['Heatsink chhara 80 W (40 °C room)', 'board +46 °C, FET ~97 °C']] })
+  };
+  let cur = 'plug';
+  const wires = Array.from(document.querySelectorAll('#flow .w[id]')), nodes = Array.from(document.querySelectorAll('#flow .node'));
+  const ST = { q1: 'OFF', q2: 'OFF', q3: 'OFF', q4: 'OFF', q5: 'OFF', q6: 'OFF', q7: 'OFF', load: '≤ 8.33 A' };
+  function render() {
+    const s = STEPS[cur];
+    wires.forEach(w => w.classList.remove('is-main', 'is-fly', 'is-ctrl', 'is-test', 'is-fault'));
+    const mark = (ids, c) => (ids || []).forEach(i => { const e = $('w-' + i); if (e) e.classList.add(c); });
+    mark(s.test, 'is-test'); mark(s.ctrl, 'is-ctrl'); mark(s.main, 'is-main'); mark(s.extraMain, 'is-main'); mark(s.fly, 'is-fly'); mark(s.fault, 'is-fault');
+    nodes.forEach(n => n.classList.remove('live', 'flyn', 'ctl', 'lit', 'bad'));
+    const tag = (ids, c) => (ids || []).forEach(i => { const e = $('n-' + i); if (e) e.classList.add(c); });
+    tag(s.ctl, 'ctl'); tag(s.live, 'live'); tag(s.extraLive, 'live'); tag(s.flyn, 'flyn'); tag(s.lit, 'lit'); tag(s.bad, 'bad');
+    Object.keys(ST).forEach(k => { const e = $('st-' + k); if (e) e.textContent = s.st[k] || (k === 'load' ? ST.load : (s.on.includes(k) ? 'ON' : 'OFF')); });
+    $('s-kind').textContent = s.kind; $('s-title').textContent = s.title; $('s-body').textContent = s.body;
+    const dl = $('s-stats'); dl.textContent = '';
+    s.stats.forEach(([k, v]) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; dl.append(dt, dd); });
+    document.querySelectorAll('[data-step]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.step === cur)));
+  }
+  document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => { cur = b.dataset.step; render(); }));
+  render();
+})();
+
 
 /* ---------------- chains ---------------- */
 const chain = (id, xs) => { document.getElementById(id).innerHTML = xs.map((x, k) => (k ? '<span class="ar">→</span>' : '') + `<b>${x}</b>`).join(''); };
