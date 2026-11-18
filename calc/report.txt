@@ -19,7 +19,7 @@ Headline operating points (estimated, conservative):
 
 Worst loss point: VIN=9 VOUT=9 loss=5.73 W eta=92.6%
   breakdown: A 0.38 B 0.07 C 0.07 D 0.38 sw 0.61 (k-formula 0.01) LDO 0.17 DCR 0.83 core 0.13 Rs 0.22 RIS 0.77 Q_LS+F2 0.76 Q1Q2 1.02
-Thermal (40C ambient, no heatsink): board +57C, FET Tj~109C, Q_LS Tj~111C, inductor ~109C
+Thermal (40C ambient, no heatsink): board +46C, FET Tj~97C, Q_LS Tj~100C, inductor ~98C
 
 Resistor networks:
   RT: value=1.4e+05, f=3e+05, note=Table 1: 140k -> 300kHz; SYNC/SPRD->INTVCC: +/-15% spread
@@ -68,7 +68,7 @@ CHECKS:
   [PASS] Inductor RMS current below rating (16.5A @ +40C)
          max IL=9.52A
   [FAIL] Board-average temperature rise at worst point, bare board (info)
-         5.73 W x 10.0 C/W = +57 C
+         5.73 W x 8.0 C/W = +46 C
   [PASS] Board-average rise WITH bottom heatsink (theta ~4.5 C/W) < 35 C
          5.73 W x 4.5 C/W = +26 C
   [PASS] Input MLCCs handle worst RMS (8A/2 = 4A rms -> <=2.5 A per 10uF 1210, ~10 mW each)

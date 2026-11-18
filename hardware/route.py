@@ -17,7 +17,8 @@ KDIR = os.path.join(HERE, 'kicad')
 PLACED = os.path.join(KDIR, 'SafeBuck-80_placed.kicad_pcb')   # from build_pcb.py
 PCB = os.path.join(KDIR, 'SafeBuck-80.kicad_pcb')             # final routed board
 FR = os.environ.get('FREEROUTING_JAR', os.path.join(HERE, 'tools', 'freerouting.jar'))
-W, H = 65.0, 48.0
+W, H = 72.0, 54.0                # board outline (the pours fill all of it)
+RW, RH = 65.0, 48.0              # routing area: the original 65 x 48 mm where the parts are
 OX, OY = 100.0, 100.0
 CLR = 0.25                       # zone-to-foreign-copper clearance (mm)
 def mm(v): return pcbnew.FromMM(v)
@@ -525,7 +526,7 @@ def finish(board):
     # back). A refill can move a pour edge away from a new track end, so repeat until a refill changes nothing.
     for it in range(4):
         from complete_routes import NO_RIP           # the gate drives keep their short paths: GND finds other room
-        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H, skip=(), rippable=(), rounds=10,
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, RW, RH, skip=(), rippable=(), rounds=10,
                              no_rip=NO_RIP, cap=True):
             print('  ', line)
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
@@ -566,7 +567,7 @@ if __name__ == '__main__':
         print('imported tracks/vias:', import_ses(board, sys.argv[2], set(rip)), 'ripped:', rip)
         print('fan-out stubs added, ripped nets:', apply_fanout(board))
         add_top_pour(board)                    # GND pads count as connected when the top pour reaches them
-        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H, skip=('GND',), rippable=('GND',), order=rip + ['LSP', 'LSN', 'CSRC', 'ISP_K', 'ISN_K']):
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, RW, RH, skip=('GND',), rippable=('GND',), order=rip + ['LSP', 'LSN', 'CSRC', 'ISP_K', 'ISN_K']):
             print('  ', line)
         finish(board); sys.exit(0)
     board = pcbnew.LoadBoard(PLACED)

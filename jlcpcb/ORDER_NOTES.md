@@ -14,7 +14,7 @@ Upload these three files, nothing else is needed:
 |---|---|---|
 | Base material | FR-4 | |
 | Layers | **2** | |
-| Dimensions | auto (65 × 48 mm) | |
+| Dimensions | auto (72 × 54 mm) | |
 | PCB thickness | 1.6 mm | |
 | **Outer copper weight** | **2 oz** | Carries 9.5 A input. The layout uses 0.2 mm tracks / 0.205 mm gaps, the 2 oz minimum |
 | Surface finish | HASL lead-free (or ENIG) | |

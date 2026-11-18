@@ -309,7 +309,7 @@ def write():
     sch = ['kicad_sch', ['version', '20230121'], ['generator', 'eeschema'], ['uuid', Q(ROOT_UUID)], ['paper', Q('A2')],
            ['title_block', ['title', Q('SafeBuck-80  -  80 W protected buck-boost (LT8390 + LM74930)')],
             ['date', Q(datetime.date(2026, 11, 18).isoformat())], ['rev', Q('1.0')],
-            ['comment', '1', Q('9-36 V in, 1.5-36 V / 0.9-8.3 A out (CV + CC), 65 x 48 mm, 2-layer 2 oz')],
+            ['comment', '1', Q('9-36 V in, 1.5-36 V / 0.9-8.3 A out (CV + CC), 72 x 54 mm, 2-layer 2 oz')],
             ['comment', '2', Q('Wrong wiring on input or output only lights a red LED')]],
            ['lib_symbols'] + libsyms] + [e for grp in items for e in grp] + texts + [notes] + \
           [['sheet_instances', ['path', Q('/'), ['page', Q('1')]]]]

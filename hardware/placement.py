@@ -1,5 +1,5 @@
 """Placement table: ref -> (x_mm, y_mm, rotation_deg) in board-local coordinates.
-(0,0) = top-left corner of the 65 x 48 mm board, y grows downward, rotation is CCW.
+(0,0) = top-left corner of the 72 x 54 mm board (parts inside the first 65 x 48 mm), y grows downward, rotation is CCW.
 
 Power stage (see docs/layout-rules.md):
   QA(Q3) rot270 + QB(Q4) rot90 side by side: SW1 copper along their TOP edge,
@@ -8,7 +8,7 @@ Power stage (see docs/layout-rules.md):
   hot loop 2 with C12-C14.  RSENSE R15 joins SW1 to the inductor's left pad.
 """
 PLACE = {
-    'H1': (3.5, 3.5, 0), 'H2': (61.5, 3.5, 0), 'H3': (3.5, 44.5, 0),
+    'H1': (3.5, 3.5, 0), 'H2': (68.5, 3.5, 0), 'H3': (3.5, 50.5, 0),
     # terminals (wire entry at the board edge)
     'J1': (6.0, 27.6, 90),       # pin1 VIN+ y=27.6, pin2 GND y=22.5
     'J2': (59.0, 39.2, 270),     # pin1 OUT+ y=39.2, pin2 OUT- y=44.3
@@ -53,8 +53,8 @@ PLACE = {
     'C4': (24.6, 34.6, 0), 'C35': (20.6, 34.6, 0), 'D17': (14.0, 32.4, 90), 'R4': (21.8, 26.6, 90), 'C5': (23.6, 26.6, 90),
     'R5': (25.6, 21.2, 90), 'R6': (25.6, 24.4, 90), 'R7': (25.6, 27.6, 90),
     'LED2': (1.6, 33.6, 90),
-    'D4': (3.4, 38.0, 0), 'R11': (1.6, 41.2, 90), 'R12': (6.4, 39.2, 90),
-    'D5': (6.4, 43.0, 0), 'D6': (20.6, 43.4, 0), 'D7': (9.2, 31.0, 0),
+    'D4': (3.4, 38.0, 0), 'R11': (8.453, 44.819, 90), 'R12': (15.508, 43.328, 90),
+    'D5': (11.712, 45.2, 0), 'D6': (20.6, 43.4, 0), 'D7': (9.2, 31.0, 0),
     'TH1': (13.4, 9.6, 90),
     # ---- output protection small-signal, grouped by function (courtyard-exact, see docs/layout-rules.md)
     #  region A (between L1 and C12-C14 / R31): Q_R hold-off (Q10), Q_P trip (Q9), Q_N trip (Q11)

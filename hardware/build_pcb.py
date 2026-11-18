@@ -15,7 +15,8 @@ LIBDIR = os.path.join(KDIR, 'SafeBuck.pretty')
 STD = '/usr/share/kicad/footprints'
 os.makedirs(LIBDIR, exist_ok=True)
 
-W, H = 65.0, 48.0          # board size (same as QS-1212CCBD: 65.1 x 47.7 mm)
+W, H = 72.0, 54.0          # board size: QS-1212CCBD is 65.1 x 47.7 mm; 7 x 6 mm more copper for cooling
+PW, PH = 65.0, 48.0        # the parts stay inside the original 65 x 48 mm area (the routing was made for it)
 OX, OY = 100.0, 100.0      # board origin in KiCad coordinates
 def mm(v): return pcbnew.FromMM(v)
 def lset(*layers):
@@ -120,7 +121,7 @@ def build(route=True):
                 return True
         return False
     def inside(r, e=0.3):
-        return r[0] >= e and r[1] >= e and r[2] <= W - e and r[3] <= H - e
+        return r[0] >= e and r[1] >= e and r[2] <= PW - e and r[3] <= PH - e
     loaded = []
     for p in PARTS:
         if p['ref'] not in PLACE: missing.append(p['ref']); continue
@@ -185,7 +186,7 @@ def build(route=True):
               ('OUT- switched: never tie to IN-', 35.3, 46.9, 0.8, 0),
               ('CV', 29.4, 41.95, 0.9, 0), ('CC', 41.2, 41.95, 0.9, 0), ('CW+', 35.3, 44.4, 0.8, 90),
               ('IN', 1.3, 35.6, 0.8, 90), ('ON', 31.8, 39.3, 0.8, 0), ('OUT', 53.2, 46.5, 0.8, 90),
-              ('SafeBuck-80 v1.0 - DUBURI', 32.5, 0.95, 0.9, 0)]
+              ('SafeBuck-80 v1.1 - DUBURI', 32.5, 0.95, 0.9, 0)]
     for txt, x, y, sz, rot in LABELS:
         st = pcbnew.PCB_TEXT(board); st.SetText(txt); st.SetLayer(pcbnew.F_SilkS)
         st.SetPosition(V(x, y)); st.SetTextAngleDegrees(rot)

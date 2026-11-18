@@ -2404,17 +2404,17 @@
   }
  },
  "thermal": {
-  "theta_board": 10.01602564102564,
+  "theta_board": 8.037551440329219,
   "worst": {
    "vin": 9,
    "vout": 9,
    "Ploss": 5.733747624132412
   },
-  "board_rise": 57.429363222480085,
-  "Tj_fet_40C": 108.64303173730198,
-  "Tj_qls_40C": 111.09208322248007,
-  "T_ind_40C": 108.90188713077103,
-  "Tj_lt8390_40C": 76.95561793348806,
+  "board_rise": 46.0852914748297,
+  "Tj_fet_40C": 97.2989599896516,
+  "Tj_qls_40C": 99.7480114748297,
+  "T_ind_40C": 97.55781538312067,
+  "Tj_lt8390_40C": 70.14917488489782,
   "with_heatsink_rise": 25.801864308595853
  },
  "cin": {
@@ -2979,7 +2979,7 @@
   {
    "name": "Board-average temperature rise at worst point, bare board (info)",
    "ok": false,
-   "detail": "5.73 W x 10.0 C/W = +57 C"
+   "detail": "5.73 W x 8.0 C/W = +46 C"
   },
   {
    "name": "Board-average rise WITH bottom heatsink (theta ~4.5 C/W) < 35 C",

@@ -228,8 +228,8 @@ check('Inductor RMS current below rating (16.5A @ +40C)',
       max(g['IL'] for g in grid) < IND['IRMS'], f"max IL={max(g['IL'] for g in grid):.2f}A")
 
 # ================================================================ 3. thermal estimates
-# board-level natural convection: 65x48 mm, both sides, h_conv+rad ~ 16 W/m2K
-A_board = 0.065*0.048*2
+# board-level natural convection: 72x54 mm, both sides, h_conv+rad ~ 16 W/m2K
+A_board = 0.072*0.054*2
 theta_board = 1/(16*A_board)
 def tj_est(P_dev, theta_dev_local, P_board, Ta=40):
     return Ta + P_board*theta_board + P_dev*theta_dev_local

@@ -53,7 +53,7 @@ eff_rows = ''.join(f"<tr><td>{h['vin']} V</td><td>{h['vout']} V</td><td>{h['iout
 # ====================================================================== component guide
 comp = f"""
 <h1>SafeBuck-80 — Kon component, keno</h1>
-<div class="sub">80 W protected 4-switch buck-boost · 9–36 V in · 1.6–36 V / 0.9–8.3 A out (CV + CC) · 65 × 48 mm · 2-layer 2 oz</div>
+<div class="sub">80 W protected 4-switch buck-boost · 9–36 V in · 1.6–36 V / 0.9–8.3 A out (CV + CC) · 72 × 54 mm · 2-layer 2 oz</div>
 
 <h2>1. Puro circuit ta ek nojore</h2>
 <p><b>VIN (J1)</b> → F1 fuse → D1 TVS → <b>LM74930 + Q1/Q2</b> (ulta polarity block, over/under-voltage cut-off)
@@ -126,7 +126,8 @@ Bidirectional bole −60 V ulta input eo conduct kore na (LM74930 block korbe), 
 <h2>5. Hisab (calc/design.py theke)</h2>
 <table><tr><th>VIN</th><th>VOUT</th><th>IOUT</th><th>Mode</th><th>Efficiency (est.)</th></tr>{eff_rows}</table>
 <p class="small">Efficiency duita estimate: conservative physics model – datasheet-formula model. Real board e ±2 % hote pare. 57-ta design check er 56-ta pass;
-je ekta "fail" seta info: heatsink chhara 80 W e board +57 °C gorom hoy — tai 40×40 mm heatsink lagbe (tokhon +27 °C).</p>
+je ekta "fail" seta info: heatsink chhara 80 W e board +46 °C gorom hoy (board 72 × 54 mm kora hoyeche; 65 × 48 e +57 °C chilo).
+Ghorer temperature e heatsink chhara chole; box er bhitore ba 40 °C er beshi gorome 40×40 mm heatsink lagan (tokhon +26 °C).</p>
 
 <h2 class="pb">6. Full BOM</h2>
 <h3>Input protection</h3>{bom_table('input')}
@@ -143,19 +144,19 @@ def build_html():
 <h1>SafeBuck-80 — Noob-friendly Build Guide</h1>
 <div class="sub">Kono experience chhara-i: file download → JLCPCB order → first power-up → CV/CC set → protection test.</div>
 <div class="card warn"><b>Safety:</b> eta 80 W power supply. 36 V porjonto DC safe, kintu short-circuit e cable gorom hoy, battery theke boro spark hoy.
-Prothombar sobsomoy <b>current-limited bench supply</b> diye chalaben. 40 W er beshi load e heatsink chhara chalaben na.</div>
+Prothombar sobsomoy <b>current-limited bench supply</b> diye chalaben. Box er bhitore ba gorom jaygay ghonta dhore 80 W chalale heatsink lagan.</div>
 
 <h2>0. Ki ki lagbe</h2>
 <ul><li>Ei repo (GitHub page e <b>Code → Download ZIP</b>).</li>
 <li>Bench power supply (0–30 V, current limit shoho). Na thakle 12 V adapter + 2 A fuse.</li>
 <li>Multimeter (10 A range shoho), ekta load (12 V bulb / 10 Ω 25 W resistor), 1.5 mm² (16 AWG) wire.</li>
-<li>Full power er jonno: 40×40×10 mm aluminium heatsink, 1 mm thermal pad, 3× M3 screw + nylon spacer.</li>
+<li>Box er bhitore / 40 °C er beshi gorome full power er jonno: 40×40×10 mm aluminium heatsink, 1 mm thermal pad, 3× M3 screw + nylon spacer.</li>
 <li>Nije solder korle (Option B): hot-air station, solder paste, flux, tweezers — U1/U2 hand solder kora kothin.</li></ul>
 
 <h2>1. JLCPCB te order (Option A — recommended)</h2>
 <ol>
 <li><a href="https://jlcpcb.com">jlcpcb.com</a> → <b>Order Now</b> → <b>Add gerber file</b> → <code>jlcpcb/SafeBuck-80_gerbers.zip</code> upload.</li>
-<li>Settings: <b>Layers 2</b>, Dimension auto (65 × 48 mm), <b>PCB Thickness 1.6 mm</b>, <b>Outer Copper Weight 2 oz</b> (khub important),
+<li>Settings: <b>Layers 2</b>, Dimension auto (72 × 54 mm), <b>PCB Thickness 1.6 mm</b>, <b>Outer Copper Weight 2 oz</b> (khub important),
 Surface finish HASL lead-free ba ENIG, color jekono.</li>
 <li><b>PCB Assembly</b> on → Top side → PCBA type <b>Standard</b> (extended part ar through-hole part er jonno lagbe) → quantity 2 ba 5.</li>
 <li>Next → BOM: <code>jlcpcb/SafeBuck-80_BOM.csv</code>, CPL: <code>jlcpcb/SafeBuck-80_CPL.csv</code> upload.</li>

@@ -85,8 +85,33 @@ def cpl():
         w.writerows(rows)
     return path, len(rows)
 
+def kicad_folder():
+    """copy the KiCad project (schematic, PCB, project libraries) to <repo>/kicad and zip it, so it is easy to find"""
+    src = os.path.join(HERE, 'kicad'); dst = os.path.join(ROOT, 'kicad')
+    if os.path.isdir(dst): shutil.rmtree(dst)
+    os.makedirs(dst)
+    for f in ('SafeBuck-80.kicad_pro', 'SafeBuck-80.kicad_pcb', 'SafeBuck-80.kicad_sch', 'SafeBuck.kicad_sym',
+              'sym-lib-table', 'fp-lib-table'):
+        shutil.copy(os.path.join(src, f), dst)
+    shutil.copytree(os.path.join(src, 'SafeBuck.pretty'), os.path.join(dst, 'SafeBuck.pretty'))
+    open(os.path.join(dst, 'README.md'), 'w').write(
+        '# SafeBuck-80 KiCad project\n\n'
+        'Open `SafeBuck-80.kicad_pro` in KiCad 7 (or newer). It contains the schematic and the routed 2-layer PCB.\n'
+        'The project libraries (`SafeBuck.kicad_sym`, `SafeBuck.pretty`) load automatically; all other symbols and\n'
+        'footprints are from the standard KiCad libraries.\n\n'
+        '`SafeBuck-80_KiCad.zip` holds the same files in one download.\n\n'
+        'This folder is a copy made by `hardware/make_jlcpcb.py`; the scripts in `hardware/` generate the originals.\n')
+    zp = os.path.join(dst, 'SafeBuck-80_KiCad.zip')
+    with zipfile.ZipFile(zp, 'w', zipfile.ZIP_DEFLATED) as z:
+        for base, _, files in os.walk(dst):
+            for f in files:
+                if f.endswith('.zip'): continue
+                full = os.path.join(base, f); z.write(full, os.path.join('SafeBuck-80_KiCad', os.path.relpath(full, dst)))
+    return dst, zp
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     zp, files = gerbers(); print('gerbers:', zp, files)
     print('BOM:', bom())
     print('CPL:', cpl())
+    print('KiCad folder:', kicad_folder())

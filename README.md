@@ -1,11 +1,11 @@
 # SafeBuck-80 — 80 W protected buck-boost (LT8390 + LM74930)
 
-**Banglay:** QS-1212CCBD (80 W automatic buck-boost) er moton same size er (65 × 48 mm) ekta module, kintu
+**Banglay:** QS-1212CCBD (80 W automatic buck-boost) er moton ekta module (72 × 54 mm — QS-1212CCBD theke 7 × 6 mm boro, thanda thakar jonno), kintu
 **4-switch synchronous buck-boost** (LT8390) diye — efficiency 93–97 % — ar **"smoke-tester" protection** shoho:
 input ba output e vhul connection dile board purbe na, shudhu **red LED** jolbe. Puro design KiCad 7 e,
 JLCPCB te sorasori order korar file shoho.
 
-**English:** A 65 × 48 mm, 80 W, CV + CC buck-boost module, the same footprint as the QS-1212CCBD. It uses a 4-switch
+**English:** A 72 × 54 mm, 80 W, CV + CC buck-boost module, a little larger than the QS-1212CCBD (65 × 48 mm) for cooling. It uses a 4-switch
 synchronous controller (LT8390) and full wrong-wiring protection: reversed input, over-voltage, under-voltage,
 output short and a reversed battery on the output. Every one of these only lights a red LED.
 
@@ -17,7 +17,7 @@ output short and a reversed battery on the output. Every one of these only light
 | Efficiency (calculated) | 96.2–96.9 % (24 → 14.4 V, 80 W) · 93.4–94.8 % (9 → 35 V, 80 W) · 94.7–95.5 % (12 → 12 V) |
 | Protection | reverse input to −60 V, OV cut-off ~43 V, UV 7.5 V, inrush limit, input short while running (Q1 gate clamp), output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–6 µs), battery above the CV setting (FB clamp), inductive loads (VOUT clamp diode), thermal foldback (PTC), last-resort fuses on both sides |
 | Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
-| PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
+| PCB | 72 × 54 mm (parts in a 65 × 48 mm area, the rest is GND copper for cooling), 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots), M3 holes in 3 corners |
 | Board art | BRACU **Duburi** logo and "Designed by Jarif Alam" on the bottom silkscreen |
 
 | Top (power stage + parts) | Bottom (GND plane, mirrored) |
@@ -25,7 +25,7 @@ output short and a reversed battery on the output. Every one of these only light
 | ![PCB top](docs/img/pcb_top.png) | ![PCB bottom](docs/img/pcb_bottom.png) |
 
 > **Status / caveat:** the design is checked by calculation (`calc/design.py`: 57 checks, 56 pass, the one "fail" is the
-> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks (`hardware/verify.py`: all pass), by KiCad DRC
+> "bare-board rise above 45 °C at 80 W" note, now +46 °C), by netlist ↔ schematic ↔ PCB consistency checks (`hardware/verify.py`: all pass), by KiCad DRC
 > (fully routed: 0 unconnected, 0 clearance, 0 dangling; the only DRC warnings are silkscreen overlaps and library-path notes) and by
 > two rounds of independent review (the second round's 8 major findings are fixed or listed under Limitations). **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,
 > and check the loop compensation with a load step before trusting it at 80 W.
@@ -36,6 +36,7 @@ output short and a reversed battery on the output. Every one of these only light
 
 | File | Ki ache |
 |---|---|
+| [`kicad/`](kicad/) | **KiCad project — open `kicad/SafeBuck-80.kicad_pro`** (schematic + routed PCB + project libraries). `kicad/SafeBuck-80_KiCad.zip` = same files in one download |
 | [`docs/SafeBuck-80_Build_Guide.pdf`](docs/SafeBuck-80_Build_Guide.pdf) | **Noob-der jonno**: JLCPCB order step by step, first power-up, CV/CC set, protection test, troubleshooting |
 | [`docs/SafeBuck-80_Component_Guide.pdf`](docs/SafeBuck-80_Component_Guide.pdf) | **Kon component keno**: every part's role, why it was chosen, full BOM with LCSC numbers |
 | [`docs/SafeBuck-80_Schematic.pdf`](docs/SafeBuck-80_Schematic.pdf) | Full schematic (exported from KiCad) |
@@ -54,7 +55,7 @@ output short and a reversed battery on the output. Every one of these only light
 | Path | Kaj (what it does) |
 |---|---|
 | `hardware/netlist.py` | **Single source of truth.** Every part: ref, value, footprint, MPN, LCSC number, role and pad → net map. Everything below is generated from this file |
-| `hardware/placement.py` | Position/rotation of every part on the 65 × 48 mm board (hot-loop layout explained in the header) |
+| `hardware/placement.py` | Position/rotation of every part on the 72 × 54 mm board (hot-loop layout explained in the header) |
 | `hardware/build_pcb.py` | Builds the custom LT8390 footprint, places all footprints, assigns nets, draws the outline, runs DRC → `kicad/SafeBuck-80_placed.kicad_pcb` |
 | `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN (zones as fixed wires, net-tie keepouts) → Freerouting → imports the session → hand fan-out stubs at U2 → completion router → GND pours, stitching vias, GND pocket merge vias and hookups, dead-end cleanup, DRC → `kicad/SafeBuck-80.kicad_pcb` |
 | `hardware/complete_routes.py` | Two-layer grid A* router (0.05 mm grid, 0.2 mm track, 0.205 mm gap) that finishes the connections Freerouting leaves open: rip-up with rollback, Kelvin net-tie entry, via keep-back at fine-pitch pins, string-pulled tracks |
@@ -64,7 +65,8 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/verify.py` | One-command check: netlist ↔ schematic ↔ PCB, footprint links, DRC summary |
 | `hardware/check_place.sh` | Quick placement check: build, list courtyard overlaps, SVG preview |
 | `hardware/routing/SafeBuck-80_freerouting.ses` | The Freerouting session the routed board was built from (input of `route.py complete`) |
-| `hardware/kicad/SafeBuck-80.kicad_pro` | **KiCad project — open this.** Contains the schematic and the routed PCB |
+| `kicad/` | Copy of the KiCad project for opening/downloading (made by `make_jlcpcb.py`), plus a zip |
+| `hardware/kicad/SafeBuck-80.kicad_pro` | KiCad project as generated by the scripts (same files as `kicad/`) |
 | `hardware/kicad/SafeBuck-80.kicad_sch` | Schematic (label style: every pin has a net label) |
 | `hardware/kicad/SafeBuck-80.kicad_pcb` | Routed 2-layer PCB |
 | `hardware/kicad/SafeBuck.kicad_sym`, `SafeBuck.pretty/` | Project libraries: LT8390, LM74930, SOT-23 diode symbols; LT8390 FE28 footprint with 10 thermal vias |
@@ -166,8 +168,10 @@ which is how a bench "smoke tester" is normally wired.
 - **Switching loss** is an estimate (two models, about 1 % apart); real efficiency can be 1–2 % lower.
 - **JLCPCB rotations**: the CPL applies the usual KiCad → JLC corrections (SOT-23, QFN, TSSOP, CP_Elec). Always check the
   placement preview.
-- **80 W needs a heatsink** (40 × 40 mm under the board). The bare board reaches about +57 °C above ambient at the worst
-  operating point.
+- **Heat at 80 W:** the larger board (72 × 54 mm) brings the worst-case rise down from about +57 °C to about +46 °C above
+  ambient (MOSFETs about 97 °C at 40 °C ambient, well below their 150 °C limit). At room temperature it runs 80 W without a
+  heatsink. In a closed box, above about 40 °C ambient, or for hours at 80 W, screw a 40 × 40 mm heatsink under the board
+  (then about +26 °C).
 - The reversed-battery protection assumes a battery of 35 V or less (Q7 blocks VOUT + battery, up to about 75 V).
 - **No input power limit.** The CC limit (up to 8.33 A) and the inductor peak limit allow more than 80 W at high output voltage
   (for example 36 V × 8 A). Set the CC pot so that VOUT × ICC ≤ 80 W. If you overload it anyway, the PTC folds the current

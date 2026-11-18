@@ -10,7 +10,7 @@ datasheet layout section plus the buck-design notes you gave me.
 |---|---|---|
 | Layers | 2 (top = power + parts, bottom = solid GND) | Cheap, and 2 oz copper carries 10 A |
 | Copper | 2 oz (70 µm) outer | 9.5 A input current, low I²R heating |
-| Board | 65 × 48 mm, 1.6 mm FR-4, 1 mm corner radius | Same size as the QS-1212CCBD module |
+| Board | 72 × 54 mm, 1.6 mm FR-4, 1 mm corner radius | QS-1212CCBD is 65 × 48 mm; the extra strip on the right and bottom is GND copper on both layers for cooling |
 | Track / gap (signals) | 0.20 mm / 0.205 mm | JLCPCB minimum for 2 oz copper is 0.2 mm / 0.2 mm (8 mil) |
 | Zone clearance | 0.25 mm | Power copper to other nets |
 | Via | 0.6 mm pad / 0.3 mm drill | JLCPCB standard via (no extra cost) |
@@ -89,9 +89,9 @@ How it is done on this board:
 
 ## 7. Thermal
 
-* Bare board at the worst-case point (9 V in, 9 V out, 80 W): about 5.7 W loss, which is about +57 °C board
-  rise. **For the full 80 W, screw a 40 × 40 mm aluminium heatsink under the board** with a thermal pad
-  (the calculation says the rise then drops to about +27 °C).
+* Bare board at the worst-case point (9 V in, 9 V out, 80 W): about 5.7 W loss. The 72 × 54 mm board (both pours,
+  stitched) gives about +46 °C board rise (65 × 48 mm gave +57 °C). In a box, above about 40 °C ambient or for hours at
+  80 W, screw a 40 × 40 mm aluminium heatsink under the board with a thermal pad (then about +26 °C).
 * The PTC (TH1) sits next to the buck FETs Q3/Q4. When the board gets too hot it pulls CTRL down and the
   output current folds back (4.7 kΩ at 105 °C). At about 120 °C it stops switching.
 
