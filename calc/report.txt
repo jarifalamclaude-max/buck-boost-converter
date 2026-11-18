@@ -1,0 +1,167 @@
+==============================================================================
+SafeBuck-80 (LT8390 + LM74930) — DESIGN CHECK REPORT
+==============================================================================
+fsw 300 kHz (spread 247-350 kHz), L 10 uH, RSENSE 3 mOhm, RIS 12 mOhm
+Peak current limit: buck >= 11.7 A, boost >= 13.3 A, max 21.7 A
+
+Headline operating points (estimated, conservative):
+    12 V ->     5 V @   8.0 A [buck      ] eta  90.4-91.2 %  loss  4.26 W  Iin  3.69 A  ILpk  8.49 A
+    12 V ->    12 V @  6.67 A [buck-boost] eta  94.7-95.5 %  loss  4.48 W  Iin  7.04 A  ILpk  7.29 A
+    24 V ->    12 V @  6.67 A [buck      ] eta  95.3-96.1 %  loss  3.93 W  Iin  3.50 A  ILpk  7.67 A
+    12 V ->    24 V @  3.33 A [boost     ] eta  95.8-96.6 %  loss  3.53 W  Iin  6.96 A  ILpk  7.96 A
+     9 V ->    35 V @  2.29 A [boost     ] eta  93.4-94.8 %  loss  5.68 W  Iin  9.52 A  ILpk 10.63 A
+    36 V ->    12 V @  6.67 A [buck      ] eta  94.6-95.8 %  loss  4.55 W  Iin  2.35 A  ILpk  8.00 A
+    24 V ->  14.4 V @  5.56 A [buck      ] eta  96.2-96.9 %  loss  3.17 W  Iin  3.46 A  ILpk  6.52 A
+    36 V ->     5 V @   8.0 A [buck      ] eta  87.9-90.2 %  loss  5.52 W  Iin  1.26 A  ILpk  8.72 A
+    19 V ->    19 V @  4.21 A [buck-boost] eta  96.3-97.3 %  loss  3.03 W  Iin  4.37 A  ILpk  4.62 A
+    12 V ->   3.3 V @   8.0 A [buck      ] eta  86.4-87.5 %  loss  4.15 W  Iin  2.54 A  ILpk  8.40 A
+    36 V ->   3.3 V @   8.0 A [buck      ] eta  82.8-86.0 %  loss  5.48 W  Iin  0.89 A  ILpk  8.50 A
+
+Worst loss point: VIN=9 VOUT=9 loss=5.73 W eta=92.6%
+  breakdown: A 0.38 B 0.07 C 0.07 D 0.38 sw 0.61 (k-formula 0.01) LDO 0.17 DCR 0.83 core 0.13 Rs 0.22 RIS 0.77 Q_LS+F2 0.76 Q1Q2 1.02
+Thermal (40C ambient, no heatsink): board +57C, FET Tj~109C, Q_LS Tj~111C, inductor ~109C
+
+Resistor networks:
+  RT: value=1.4e+05, f=3e+05, note=Table 1: 140k -> 300kHz; SYNC/SPRD->INTVCC: +/-15% spread
+  EN_UVLO: R1=2e+05, R2=4.64e+04, falling=6.479, rising=7.048
+  FB: R4=5620, R3f=0, Rpot=2e+05, vmin=1.534, vmax=36.59, vmax_pot_lo=33.03, vmax_pot_hi=40.15, i_div=0.0001779, err_bias_mV=8
+  CTRL: Rt=2e+04, Rb=4530, Rpot=5e+04, ptc=PRF18BC471QB5RB (470R@25C, 4.7k@105C, 47k@120C), vmin=0.3624, vmax=1.454, icc_min=0.9367, icc_max=8.333, i_vref=8e-05
+  SS: C=2.2e-07, tss=0.0176, R_to_VREF=1e+05, mode=keep-running (CC into short)
+  VC: Rc=1e+04, Cc=2.2e-08, Cp=1e-10, fz=723.4, note=start values -> verify LTspice + load step, fc_target_max=4029
+  BST: C=1e-06, need=5.556e-07
+  INTVCC: I_worst=0.04163, P_lt8390_bb30=1.041, P_lt8390_buck36=0.6887
+  CTRL foldback:
+     {'T': '25C (470R)', 'ctrl_max': 1.454, 'icc_max': 8.33, 'ctrl_30pct': 0.977, 'icc_30pct': 6.05, 'shutdown': False}
+     {'T': '105C (4.7k)', 'ctrl_max': 1.376, 'icc_max': 8.33, 'ctrl_30pct': 0.883, 'icc_30pct': 5.28, 'shutdown': False}
+     {'T': '120C (47k)', 'ctrl_max': 0.897, 'icc_max': 5.39, 'ctrl_30pct': 0.451, 'icc_30pct': 1.68, 'shutdown': False}
+     {'T': '~130C (470k)', 'ctrl_max': 0.2, 'icc_max': 0, 'ctrl_30pct': 0.077, 'icc_30pct': 0, 'shutdown': True}
+
+Front end (LM74930):
+  ladder: Ra=2.8e+05, Rb=1.74e+04, Rc=4420, uv_fall=7.608, uv_rise=8.299, uv_rise_max=8.714, uv_fall_min=7.373, ov_rise=40.97, ov_fall=37.56, ov_rise_min=39.95, ov_rise_max=43.02, leak_err=0.007368
+  breaker: status=disabled (F1 fuse covers internal failure)
+  inrush: Cload=0.000113, CdVdT=3.3e-09, RG=100, I_inrush=[1.3354545454545454, 1.8833333333333333, 2.568181818181818], t_ramp_36V=0.001584, E_q1=0.07322, P_peak=92.45
+
+LEDs / guard:
+  green: {'src': 'INTVCC 5V', 'R': 2200.0, 'I': 0.001}
+  red_fault: {'src': 'VIN_F via BAS21', 'R': 11200.0, 'I_at': {7.6: 0.0004464285714285714, 12: 0.0008392857142857143, 24: 0.001910714285714286, 38.5: 0.0032053571428571426, 60: 0.005125}, 'P_each_60V': 0.1470875}
+  red_in_reverse: {'R': 11200.0, 'I_at': {9: 0.0005089285714285714, 12: 0.0007767857142857142, 24: 0.001848214285714286, 36: 0.002919642857142857, 60: 0.0050625}, 'P_each_60V': 0.143521875}
+  red_out: {'R': 10000.0, 'I_at': {3.7: 0.00011, 6: 0.00033999999999999997, 12: 0.0009400000000000001, 24: 0.0021400000000000004, 36: 0.0033399999999999997}, 'P_36V': 0.11155599999999997}
+  q_n: {'trip_V': -1.25, 'Ib_at_minus2V': 0.00075, 'sink_capability_A': 0.075, 'R33_pullup_A': 0.001}
+
+Ripple:
+   {'vin': 9, 'vout': 12, 'iout': 6.67, 'dv_cap_mV': 111.6, 'dv_esr_mV': 8.6, 'total_mV': 120.2}
+   {'vin': 9, 'vout': 24, 'iout': 3.33, 'dv_cap_mV': 139.5, 'dv_esr_mV': 8.6, 'total_mV': 148.1}
+   {'vin': 9, 'vout': 35, 'iout': 2.29, 'dv_cap_mV': 113.7, 'dv_esr_mV': 8.6, 'total_mV': 122.3}
+   {'vin': 24, 'vout': 12, 'iout': 6.67, 'dv_cap_mV': 20.3, 'dv_esr_mV': 2.4, 'total_mV': 22.7}
+   {'vin': 36, 'vout': 12, 'iout': 6.67, 'dv_cap_mV': 27.1, 'dv_esr_mV': 3.1, 'total_mV': 30.3}
+   {'vin': 36, 'vout': 5, 'iout': 8, 'dv_cap_mV': 14.6, 'dv_esr_mV': 1.7, 'total_mV': 16.3}
+
+CHECKS:
+  [PASS] Slope-comp minimum inductance (L > 10*VOUT*RSENSE/f)
+         L_min(-20%)=8.0uH > 4.25uH @f=247kHz
+  [PASS] RSENSE below worst-case requirement (incl. 40/35mV min threshold, 95% eff)
+         need <= 3.56 mOhm, chosen 3.0 mOhm
+  [PASS] Inductor Isat1 (-20%) above worst-case peak current limit
+         Isat1=22.0A >= Ilim_max=21.7A (65mV/3mOhm)
+  [PASS] Rated 80W/8A never hits min peak current limit (all grid points)
+         worst ILpk=10.63A at VIN=9 VOUT=35 (limits buck>=11.7A, boost>=13.3A)
+  [PASS] Inductor RMS current below rating (16.5A @ +40C)
+         max IL=9.52A
+  [FAIL] Board-average temperature rise at worst point, bare board (info)
+         5.73 W x 10.0 C/W = +57 C
+  [PASS] Board-average rise WITH bottom heatsink (theta ~4.5 C/W) < 35 C
+         5.73 W x 4.5 C/W = +26 C
+  [PASS] Input MLCCs handle worst RMS (8A/2 = 4A rms -> <=2.5 A per 10uF 1210, ~10 mW each)
+         4.00A / 2 = 2.00 A each, P = 12 mW
+  [PASS] Output caps RMS: per-MLCC <=2.5A and hybrid share well below its rating
+         worst 4.44A rms -> 1.48 A/MLCC, hybrid 0.14 A
+  [PASS] Output ripple < 1% of VOUT at 80W (all listed corners)
+         9->12V: 120.2mV; 9->24V: 148.1mV; 9->35V: 122.3mV; 24->12V: 22.7mV; 36->12V: 30.3mV; 36->5V: 16.3mV
+  [PASS] Input MLCC rating >= 2x VIN_max (user note): 100V vs 2x36V
+         100 V >= 72 V (10 uF X7S keeps ~45% at 36 V)
+  [PASS] Output MLCC rating >= 2x VOUT_max: 100V vs 2x35V
+         100 V >= 70 V
+  [PASS] Input bulk electrolytic 63V >= OV cut-off max (43V) x1.4
+         63 V >= 60.2 V
+  [PASS] Output hybrid 50V >= max VOUT with +10% pot tolerance & OVP (1.1x)
+         50 V >= 44.0 V
+  [PASS] Cable-LC damping: bulk ESR ~ Z0 and Cbulk >= 4x Cmlcc (Middlebrook optimum)
+         Z0=0.33 ohm, ESR=0.35 ohm (ratio 1.05), Cbulk/Cmlcc=11.1
+  [PASS] Converter negative input impedance > filter peak (stability margin)
+         |Zin|min = VIN^2/Pin = 0.96 ohm vs peak ~0.33 ohm
+  [PASS] LT8390 UVLO below LM74930 UV (clean stop after front-end cut-off)
+         LT8390 rises 7.05 V / falls 6.48 V; LM74930 falls >= 7.37 V
+  [PASS] CV range covers ~1.5-35V (pot +/-10%)
+         min 1.53 V, max 36.6 V (pot -10%: 33.0 V, +10%: 40.1 V)
+  [PASS] Max VOUT with +10% pot stays < FET/cap ratings
+         40.1 V, OVP trip 44.2 V < 50 V hybrid / 60 V FETs
+  [PASS] Low-side switch Q_LS gate drive >= 8 V at VIN=9 V (CSD19532Q5B Vth max 3.2 V, Rds spec @6/10 V)
+         VG = 8.3 V at VIN 9 V, clamps 10 V above ~11 V input; ground-referenced -> fully on even with output shorted
+  [PASS] CTRL min above rising latch threshold max (0.315+0.025 V) incl. VREF -1.5%
+         CTRL_min=0.362 V (x0.985=0.357) > 0.340 V -> CC min 0.94 A
+  [PASS] CTRL max reaches full-scale (>=1.35 V) -> CC max 100mV/RIS
+         CTRL_max=1.454 V -> CC max 8.33 A
+  [PASS] VREF load < 1 mA
+         100 uA
+  [PASS] Thermal: PTC hot (>=~130C) forces CTRL < 0.285 V -> switching stops (auto-restart when cool)
+         CTRL at 470k PTC = 0.200 V
+  [PASS] CSS >= 5-10x VC cap (datasheet)
+         220nF / 22nF = 10.0x
+  [PASS] BST caps >= 100x top-FET gate charge
+         need 0.56 uF, use 1.0 uF X7R 16V
+  [PASS] INTVCC load < 80 mA min limit
+         41.6 mA (4 FETs @ 350 kHz)
+  [PASS] LT8390 TJ < 125C at 60C local ambient (worst LDO dissipation)
+         P=1.04 W x 30 C/W -> TJ=91 C
+  [PASS] Front-end starts at VIN=9V worst case (UV rising max < 9 V)
+         UV rise max 8.71 V
+  [PASS] Front-end OV never trips inside 36 V spec (OV rising min > 36 V)
+         OV rise min 39.95 V
+  [PASS] OV cut-off max protects LT8390 (60 V abs) with margin
+         OV rise max 43.0 V
+  [PASS] OV release (falling, min) above 36 V -> a 36 V supply always re-enables
+         OV fall min 36.40 V
+  [PASS] Input fuse F1 (15 A) above max input current with margin (no nuisance blow)
+         15 A > 1.4 x 9.52 A
+  [PASS] Inrush < 3 A and ramp shorter than LT8390 soft-start
+         I_inrush 1.34-2.57 A, ramp 1.58 ms < tSS 17.6 ms
+  [PASS] Q1 SOA during inrush (<= ~3 A, <2 ms at <=36 V; SOA 1 ms line ~10 A @36 V)
+         2.57 A peak, 1.58 ms, E=73 mJ
+  [PASS] VCAP >= 10x(Ciss Q1+Q2)
+         use 0.22 uF >= 74 nF
+  [PASS] FLT pin current < 10 mA abs max at 60 V
+         5.1 mA
+  [PASS] RED IN resistors (1206, 0.25 W) within power at +/-60 V input
+         147 mW each
+  [PASS] RED OUT resistor R43 (1206, 0.25 W) within power with a 36 V battery reversed
+         112 mW; LED visible from ~3.5 V battery (0.3 mA at 6 V)
+  [PASS] Q_N sinks far more than the R33 gate pull-up (Q_LS gate actually goes low)
+         Q11 can sink ~75 mA vs 1 mA from R33; trips when OUT+ < -1.25 V
+  [PASS] Q_N idle: D13 (250 V) blocks normal OUT+ up to 36 V from the 6 V VEBO of Q11
+         BAS21 VR 250 V
+  [PASS] LT8390 LOADEN tied to VREF (2.0 V) > rising threshold max 1.5 V -> switching always enabled
+         pin 11 -> pin 12
+  [PASS] Q_P trip stays >= ISOC (62.5 A) over temperature (so ISOC pauses converter first -> no chatter on correct-battery inrush)
+         Q_P trip 83 A @25C / 62 A @100C vs ISOC 62.5 A
+  [PASS] Fault: Reversed 12.6V battery hot-plugged while set 14.4V
+         Q_P trips at 1.41 us, peak 119 A (IDM 400 A), VOUT_C min 12.30 V (LT8390 VOUT pin 14.24 V), avalanche 3.7 mJ (EAS 274), then Q_LS holds 27.0 V (100 V FET)
+  [PASS] Fault: Reversed 25.6V battery hot-plugged while set 29.2V
+         Q_P trips at 0.73 us, peak 161 A (IDM 400 A), VOUT_C min 27.16 V (LT8390 VOUT pin 29.07 V), avalanche 10.4 mJ (EAS 274), then Q_LS holds 54.8 V (100 V FET)
+  [PASS] Fault: Reversed 35.0V battery hot-plugged while set 35.0V
+         Q_P trips at 0.59 us, peak 184 A (IDM 400 A), VOUT_C min 32.84 V (LT8390 VOUT pin 34.86 V), avalanche 18.6 mJ (EAS 274), then Q_LS holds 70.0 V (100 V FET)
+  [PASS] Fault: Reversed 12.6V battery hot-plugged while set 12.0V
+         Q_P trips at 1.55 us, peak 115 A (IDM 400 A), VOUT_C min 9.83 V (LT8390 VOUT pin 11.82 V), avalanche 3.4 mJ (EAS 274), then Q_LS holds 24.6 V (100 V FET)
+  [PASS] Fault: Reversed 12.6V battery hot-plugged while set 5.0V
+         Q_P trips at 2.21 us, peak 104 A (IDM 400 A), VOUT_C min 2.45 V (LT8390 VOUT pin 4.75 V), avalanche 2.6 mJ (EAS 274), then Q_LS holds 17.6 V (100 V FET)
+  [PASS] Fault: Reversed 12.6V battery hot-plugged while set 3.3V
+         Q_N trips at 3.19 us, peak 118 A (IDM 400 A), VOUT_C min -0.68 V (LT8390 VOUT pin 2.80 V), avalanche 3.2 mJ (EAS 274), then Q_LS holds 15.9 V (100 V FET)
+  [PASS] Fault: Reversed 12.6V battery hot-plugged while set 1.5V
+         Q_N trips at 2.46 us, peak 89 A (IDM 400 A), VOUT_C min -0.89 V (LT8390 VOUT pin 1.25 V), avalanche 1.8 mJ (EAS 274), then Q_LS holds 14.1 V (100 V FET)
+  [PASS] Fault: Reversed 3.7V battery hot-plugged while set 1.5V
+         Q_N trips at 4.85 us, peak 47 A (IDM 400 A), VOUT_C min -0.97 V (LT8390 VOUT pin 1.07 V), avalanche 0.5 mJ (EAS 274), then Q_LS holds 5.2 V (100 V FET)
+  [PASS] Fault: Reversed 25.6V battery hot-plugged while set 1.5V
+         Q_N trips at 1.58 us, peak 128 A (IDM 400 A), VOUT_C min -0.94 V (LT8390 VOUT pin 1.30 V), avalanche 4.3 mJ (EAS 274), then Q_LS holds 27.1 V (100 V FET)
+  [PASS] ISP-ISN pin differential kept < 1 V abs max during faults (10 ohm + BAV99 clamp ~0.8 V)
+         clamp after series 10 ohm: pins see ~0.8 V while RIS sees up to several volts; ISOC (0.75 V) still reachable
+
+52/53 checks pass

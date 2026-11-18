@@ -1,0 +1,87 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SafeBuck-80 Build Guide</title>
+<style>
+ body{font-family:'DejaVu Sans',Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1b1b1b}
+ h1{font-size:21pt;margin:0 0 2mm;color:#0d3b66} h2{font-size:14pt;color:#0d3b66;border-bottom:2px solid #0d3b66;padding-bottom:1mm;margin-top:7mm}
+ h3{font-size:11.5pt;margin:4mm 0 1mm;color:#222}
+ .sub{color:#555;margin-bottom:5mm} table{border-collapse:collapse;width:100%;margin:2mm 0 3mm;font-size:9pt}
+ th,td{border:1px solid #bbb;padding:1.2mm 1.6mm;vertical-align:top;text-align:left} th{background:#e8eef5}
+ .card{border:1px solid #c9d6e3;border-left:4px solid #0d3b66;border-radius:2mm;padding:2mm 3mm;margin:2.5mm 0;break-inside:avoid}
+ .warn{border-left-color:#c0392b;background:#fdf1f0} .ok{border-left-color:#2e7d32;background:#f1f8f1}
+ code{background:#f2f2f2;padding:0 1mm;border-radius:1mm;font-size:9pt} .small{font-size:8.5pt;color:#444}
+ img{max-width:100%} .two{display:flex;gap:4mm} .two>div{flex:1}
+ ol li,ul li{margin:0.8mm 0} .pb{break-before:page}
+</style></head><body>
+<h1>SafeBuck-80 — Noob-friendly Build Guide</h1>
+<div class="sub">Kono experience chhara-i: file download → JLCPCB order → first power-up → CV/CC set → protection test.</div>
+<div class="card warn"><b>Safety:</b> eta 80 W power supply. 36 V porjonto DC safe, kintu short-circuit e cable gorom hoy, battery theke boro spark hoy.
+Prothombar sobsomoy <b>current-limited bench supply</b> diye chalaben. 40 W er beshi load e heatsink chhara chalaben na.</div>
+
+<h2>0. Ki ki lagbe</h2>
+<ul><li>Ei repo (GitHub page e <b>Code → Download ZIP</b>).</li>
+<li>Bench power supply (0–30 V, current limit shoho). Na thakle 12 V adapter + 2 A fuse.</li>
+<li>Multimeter (10 A range shoho), ekta load (12 V bulb / 10 Ω 25 W resistor), 1.5 mm² (16 AWG) wire.</li>
+<li>Full power er jonno: 40×40×10 mm aluminium heatsink, 1 mm thermal pad, 3× M3 screw + nylon spacer.</li>
+<li>Nije solder korle (Option B): hot-air station, solder paste, flux, tweezers — U1/U2 hand solder kora kothin.</li></ul>
+
+<h2>1. JLCPCB te order (Option A — recommended)</h2>
+<ol>
+<li><a href="https://jlcpcb.com">jlcpcb.com</a> → <b>Order Now</b> → <b>Add gerber file</b> → <code>jlcpcb/SafeBuck-80_gerbers.zip</code> upload.</li>
+<li>Settings: <b>Layers 2</b>, Dimension auto (65 × 48 mm), <b>PCB Thickness 1.6 mm</b>, <b>Outer Copper Weight 2 oz</b> (khub important),
+Surface finish HASL lead-free ba ENIG, color jekono.</li>
+<li><b>PCB Assembly</b> on → Top side → PCBA type <b>Standard</b> (extended part ar through-hole part er jonno lagbe) → quantity 2 ba 5.</li>
+<li>Next → BOM: <code>jlcpcb/SafeBuck-80_BOM.csv</code>, CPL: <code>jlcpcb/SafeBuck-80_CPL.csv</code> upload.</li>
+<li>Part list e protita line "matched" kina dekhun (LCSC number already deya). Kono part out of stock dekhale same value/package er onno part select korun —
+<b>U1, U2, Q1–Q7, L1, R15, R31 change korben na</b> (egula exact lagbe).</li>
+<li><b>Placement preview</b> khub mon diye dekhun: U1/U2 er pin-1 dot, MOSFET, diode/LED er dag (cathode), C11/C18 er + side silkscreen er sathe milche kina.
+Ulta dekhale oi part er rotation 90/180 ghuran. Order e <b>"Confirm Parts Placement"</b> option thakle select korun — JLC engineer check kore pathabe.</li>
+<li>J1, J2 (screw terminal) ar RV1, RV2 (pot) through-hole part: JLC ke diye lagaben (THT assembly) othoba BOM theke bad diye nije solder korben (shohoj).</li>
+<li>Order + payment. Shadharonoto 1–2 shoptaho.</li></ol>
+
+<h2>2. Nije assemble (Option B — experienced der jonno)</h2>
+<p>Order: U2 (QFN) → U1 (TSSOP-EP, exposed pad e paste) → Q1–Q7 → L1 → baki SMD → J1, J2, RV1, RV2. Stencil + hot air/reflow use korun.
+U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
+
+<h2>3. Prothom check (power chhara)</h2>
+<ol><li>Magnifier diye U1/U2 er pin e solder bridge ache kina.</li>
+<li>Multimeter (resistance): J1 + theke − : &gt; 1 kΩ hote hobe (short na). J2 + theke −: &gt; 1 kΩ.</li>
+<li>C11, C18 er + chinho, LED gulo silkscreen er sathe milche kina.</li></ol>
+
+<h2>4. First power-up (smoke test, step by step)</h2>
+<ol>
+<li>RV1 (CV) <b>counter-clockwise 25 paak</b> ghurie minimum e rakhun (output ~1.5 V). RV2 (CC) majhamajhi.</li>
+<li>Bench supply: <b>12 V, current limit 0.2 A</b>. J1 er + ar − (silkscreen dekhun) e lagan, J2 te kichu na.</li>
+<li>Expected: <b>green LED jolbe</b>, red LED gulo bondho, input current ~20–40 mA. Kichu gorom hobe na.</li>
+<li>J2 te multimeter: ~1.5 V. RV1 clockwise ghuran → voltage barbe (25 paak e full range 1.5–36 V). (Kono kono 3296 pot e direction ulta — meter dekhe bujhun.)</li>
+<li>12 V set kore load (bulb) lagan, supply current limit 3 A koren. Bulb jolbe, voltage thik thakbe.</li>
+<li><b>CC set:</b> load khule, J2 te multimeter (10 A range) direct lagan (short) → current dekhaben → RV2 ghurie jei current limit chan set korun (0.9–8.3 A).</li></ol>
+
+<h2>5. Protection test (ichhe kore vhul connection)</h2>
+<table><tr><th>Test (supply current limit 1 A rakhun)</th><th>Expected</th></tr>
+<tr><td>Input + ar − ulta (12 V)</td><td>Red IN LED jolbe, output 0, kichu gorom na. Thik kore lagale abar chalu.</td></tr>
+<tr><td>Input 7 V (UV) / 42 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 37.6 V er niche abar chalu.</td></tr>
+<tr><td>Output short (J2 + ar − jor)</td><td>CC limit e current, green LED on, board halka gorom. Short khulle abar normal.</td></tr>
+<tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–3 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
+<tr><td>Output e battery thik polarity te, input bondho</td><td>Battery drain hoy na (Q7 off), shudhu µA leakage.</td></tr></table>
+<div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na.</b> OUT− Q7 diye switch kora — jorle converter cholbe, kintu output reverse-battery protection ar kaj korbe na.</div>
+
+<h2>6. Full power (80 W)</h2>
+<ul><li>Board er niche heatsink: thermal pad diye MOSFET/U1 area er bottom side heatsink e chepe lagan, M3 nylon spacer.</li>
+<li>Input wire 1.5 mm² (9 V e 9.5 A input current), terminal screw tight.</li>
+<li>Max: 8.3 A (CC max) ar 80 W — duto limit-i manben (jemon 24 V e 3.3 A).</li>
+<li>Board 105 °C hole TH1 nije current komay; eta hole heatsink/airflow baran.</li></ul>
+
+<h2>7. LED er mane</h2>
+<table><tr><th>LED</th><th>Mane</th></tr><tr><td>Green (LED1)</td><td>Controller er power (INTVCC 5 V) ache.</td></tr>
+<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; 41 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
+
+<h2>8. Troubleshooting</h2>
+<table><tr><th>Problem</th><th>Check</th></tr>
+<tr><td>Green LED jole na</td><td>Input &gt; 8.3 V? Red IN jolche? Polarity? U1 pin 7 (VIN) e voltage? EN pin (9) &gt; 1.22 V?</td></tr>
+<tr><td>Green jole, output 0</td><td>CTRL (U1 pin 13) &gt; 0.3 V? (RV2 khub kom hole latch) RV2 ektu clockwise. Red OUT jolche?</td></tr>
+<tr><td>Output voltage set hoy na</td><td>RV1 er solder, R25 (5.62 k) at U1 pin 19.</td></tr>
+<tr><td>Load e voltage pore jay</td><td>CC limit kom set — RV2 clockwise. TP1 (ISMON) = 0.25 V + 10 × I × 12 mΩ.</td></tr>
+<tr><td>Whine/shabdo, garom</td><td>Compensation (R22/C29/C30) start value — oscilloscope e load-step dekhe tune korun (README "limitations").</td></tr></table>
+
+<h2>9. PCB</h2>
+<div class="two"><div><p class="small">Top (power + parts)</p></div><div><p class="small">Bottom (GND plane, mirrored)</p></div></div>
+</body></html>

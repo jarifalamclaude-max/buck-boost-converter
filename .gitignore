@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+# build previews / logs from check_place.sh
+hardware/build/
+# KiCad backups, caches and per-user settings
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.bak
+*-bak
+_autosave-*
+~*.lck
+# intermediate routing files (re-created by route.py)
+hardware/kicad/SafeBuck-80_zones.kicad_pcb
+hardware/kicad/SafeBuck-80_zones.kicad_pro
+hardware/kicad/*.ses
+hardware/kicad/drc_placement.rpt
+logs/
+hardware/kicad/SafeBuck-80_placed.kicad_pcb
+hardware/kicad/SafeBuck-80_placed.kicad_pro
+hardware/kicad/SafeBuck-80_routed.*
+hardware/kicad/*.dsn
+hardware/logs/

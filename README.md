@@ -1,0 +1,153 @@
+# SafeBuck-80 — 80 W protected buck-boost (LT8390 + LM74930)
+
+**Banglay:** QS-1212CCBD (80 W automatic buck-boost) er moton same size er (65 × 48 mm) ekta module, kintu
+**4-switch synchronous buck-boost** (LT8390) diye — efficiency 93–97 % — ar **"smoke-tester" protection** shoho:
+input ba output e vhul connection dile board purbe na, shudhu **red LED** jolbe. Puro design KiCad 7 e,
+JLCPCB te sorasori order korar file shoho.
+
+**English:** A 65 × 48 mm, 80 W, CV + CC buck-boost module, the same footprint as the QS-1212CCBD. It uses a 4-switch
+synchronous controller (LT8390) and full wrong-wiring protection: reversed input, over-voltage, under-voltage,
+output short and a reversed battery on the output. Every one of these only lights a red LED.
+
+| | |
+|---|---|
+| Input | 9–36 V (works down to 8.3 V rising / 7.6 V falling), survives −60 V reversed and up to +58 V DC (cut-off above 41 V) |
+| Output | 1.5–36 V (CV, 25-turn pot) and 0.94–8.33 A (CC, 25-turn pot), max 80 W |
+| Topology | 4-switch synchronous buck-boost, 300 kHz ±15 % spread spectrum, peak-current mode |
+| Efficiency (calculated) | 96.2–96.9 % (24 → 14.4 V, 80 W) · 93.4–94.8 % (9 → 35 V, 80 W) · 94.7–95.5 % (12 → 12 V) |
+| Protection | reverse input to −60 V, OV cut-off 41 V, UV 7.6 V, inrush limit, output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–3 µs), thermal foldback (PTC), last-resort fuses on both sides |
+| Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
+| PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
+
+> **Status / caveat:** the design is checked by calculation (`calc/design.py`: 53 checks, 52 pass, the one "fail" is the
+> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks, by KiCad DRC and by an independent
+> review agent. **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,
+> and check the loop compensation with a load step before trusting it at 80 W.
+
+---
+
+## Documents (shuru korun ekhan theke)
+
+| File | Ki ache |
+|---|---|
+| [`docs/SafeBuck-80_Build_Guide.pdf`](docs/SafeBuck-80_Build_Guide.pdf) | **Noob-der jonno**: JLCPCB order step by step, first power-up, CV/CC set, protection test, troubleshooting |
+| [`docs/SafeBuck-80_Component_Guide.pdf`](docs/SafeBuck-80_Component_Guide.pdf) | **Kon component keno**: every part's role, why it was chosen, full BOM with LCSC numbers |
+| [`docs/SafeBuck-80_Schematic.pdf`](docs/SafeBuck-80_Schematic.pdf) | Full schematic (exported from KiCad) |
+| [`docs/layout-rules.md`](docs/layout-rules.md) | PCB layout rules used (hot loops, Kelvin sense, ground, thermal) |
+| [`jlcpcb/ORDER_NOTES.md`](jlcpcb/ORDER_NOTES.md) | What to upload and which settings to pick at JLCPCB |
+
+## JLCPCB te order (short version)
+
+1. `jlcpcb/SafeBuck-80_gerbers.zip` upload. Settings: **2 layers, 1.6 mm, 2 oz outer copper**.
+2. Turn on PCB Assembly (Standard, top side), then upload `jlcpcb/SafeBuck-80_BOM.csv` + `jlcpcb/SafeBuck-80_CPL.csv`.
+3. Check the placement preview (pin-1 of U1/U2, FETs, diodes, LEDs, C11/C18 polarity) and order.
+   Details are in [`jlcpcb/ORDER_NOTES.md`](jlcpcb/ORDER_NOTES.md).
+
+## File chart — protita file ki kaj kore
+
+| Path | Kaj (what it does) |
+|---|---|
+| `hardware/netlist.py` | **Single source of truth.** Every part: ref, value, footprint, MPN, LCSC number, role and pad → net map. Everything below is generated from this file |
+| `hardware/placement.py` | Position/rotation of every part on the 65 × 48 mm board (hot-loop layout explained in the header) |
+| `hardware/build_pcb.py` | Builds the custom LT8390 footprint, places all footprints, assigns nets, draws the outline, runs DRC → `kicad/SafeBuck-80_placed.kicad_pcb` |
+| `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN with keepouts → Freerouting → imports the session → GND fill, stitching vias, DRC → `kicad/SafeBuck-80.kicad_pcb` |
+| `hardware/make_schematic.py` | Generates the KiCad schematic `kicad/SafeBuck-80.kicad_sch` + project symbol library `SafeBuck.kicad_sym`; symbol UUIDs match the footprints |
+| `hardware/make_jlcpcb.py` | Makes the JLCPCB package (Gerber + drill zip, BOM, CPL) |
+| `hardware/check_place.sh` | Quick placement check: build, list courtyard overlaps, SVG preview |
+| `hardware/kicad/SafeBuck-80.kicad_pro` | **KiCad project — open this.** Contains the schematic and the routed PCB |
+| `hardware/kicad/SafeBuck-80.kicad_sch` | Schematic (label style: every pin has a net label) |
+| `hardware/kicad/SafeBuck-80.kicad_pcb` | Routed 2-layer PCB |
+| `hardware/kicad/SafeBuck.kicad_sym`, `SafeBuck.pretty/` | Project libraries: LT8390, LM74930, SOT-23 diode symbols; LT8390 FE28 footprint with 10 thermal vias |
+| `hardware/kicad/sym-lib-table`, `fp-lib-table` | Point KiCad at the project libraries (loaded automatically) |
+| `hardware/kicad/drc_routed.rpt` | KiCad DRC report of the routed board |
+| `calc/design.py` | Every design equation from the datasheets: inductor, RSENSE, slope compensation, losses, ripple, UVLO/OV, inrush, LEDs, thermal, fault simulation of a reversed battery hit → `report.txt`, `results.json` |
+| `calc/report.txt` | Human-readable result of all 53 checks |
+| `docs/make_docs.py`, `docs/print_pdf.js`, `docs/src/*.html` | Build the PDF guides (edit the HTML, run the script) |
+| `jlcpcb/` | Files to upload to JLCPCB |
+
+Regenerate everything (Ubuntu with KiCad 7, Java, Node + Playwright):
+
+```bash
+cd hardware && /usr/bin/python3 build_pcb.py && /usr/bin/python3 route.py route && python3 make_schematic.py && python3 make_jlcpcb.py && cd .. && python3 docs/make_docs.py
+```
+
+## Block diagram
+
+```
+J1 VIN+ ─ F1 15A ─┬─ D1 TVS        ┌──────── LT8390 4-switch buck-boost ────────┐
+                  │                │  Q3 ┐            R15 3mΩ        ┌ Q6        │
+                  └─ Q1 ─┬─ Q2 ──── VIN_P ─┤ SW1 ─[RSENSE]─ L1 10µH ─ SW2 ├─ VOUT_C ─ R31 12mΩ ─ F2 10A ─ J2 OUT+
+             (HGATE)  CSRC (DGATE) │  Q4 ┘   (peak current)          └ Q5        │     (CC sense)
+                     LM74930       └─────────────────────────────────────────────┘
+             reverse/OV/UV, FLT→red IN                                    J2 OUT− ─ Q7 (100 V) ─ GND
+                                                                 trips: Q9 (I>83 A), Q11 (OUT+<−1.25 V), hold: Q10, red OUT
+```
+
+## Fault matrix (vhul connection hole ki hoy)
+
+| Wrong connection | What protects | Result |
+|---|---|---|
+| Input reversed (up to −60 V) | LM74930 + Q2 block, D1 is bidirectional | red IN LED, no current, nothing hot |
+| Input 41–58 V DC | LM74930 OV opens Q1 (back on below 37.6 V) | red IN LED, output off |
+| Input spike (hot-plug, cable inductance) | D1 SMBJ58CA, R1/C1 snubber, C11 ESR damping | clamped |
+| Input below 7.6 V | LM74930 UV + LT8390 EN/UVLO | output off, red IN LED |
+| Output short circuit | LT8390 CC limit (keep-running) + 62.5 A instant ISOC | runs at the CC current, recovers when the short is removed |
+| Battery reversed on the output (≤ 35 V), any CV setting | Q9 (current > 83 A) or Q11 (OUT+ < −1.25 V) turns Q7 off within 1–3 µs, Q10 holds it off | red OUT LED, peak 47–184 A for < 3 µs, Q7 avalanche ≤ 19 mJ (rated 274 mJ) |
+| Battery on the output, correct polarity, input off | Q7 off without VIN | no drain (µA) |
+| Overheating | PTC TH1 pulls CTRL down | current folds back at about 105 °C, stops at about 130 °C, auto-restarts |
+| A MOSFET fails short | F1 / F2 | fuse opens (last resort only) |
+
+Never connect OUT− to VIN− outside the board. OUT− is switched by Q7: the converter still works if you do,
+but the reversed-battery protection on the output is lost.
+
+## KiCad libraries used
+
+| Library | Used for |
+|---|---|
+| `Device` (KiCad 7 standard) | R, C, C_Polarized, L, D, D_TVS, LED, Fuse, R_Potentiometer, Thermistor_PTC, Q_NPN_BEC, Q_PNP_BEC, NetTie_2 symbols |
+| `Transistor_FET` | CSD18532Q5B, CSD19532Q5B symbols (TDSON-8 pinout: 1–3 S, 4 G, 5 D) |
+| `Connector`, `Mechanical` | Screw_Terminal_01x02, TestPoint, MountingHole |
+| `SafeBuck` (this project, `SafeBuck.kicad_sym`) | LT8390, LM74930, D_SOT23 (BAS21), DZ_SOT23 (BZX84) |
+| Footprints: `Resistor_SMD`, `Capacitor_SMD`, `Diode_SMD`, `LED_SMD`, `Package_TO_SOT_SMD` (SOT-23, TDSON-8-1), `Package_DFN_QFN` (HVQFN-24 4×4), `Inductor_SMD` (L_Coilcraft_XAL1510-103), `Fuse` (Littelfuse NANO2 451/453), `Potentiometer_THT` (Bourns 3296W), `TerminalBlock_Phoenix` (MKDS 1,5/2-5,08), `TestPoint`, `MountingHole`, `NetTie` | Standard KiCad 7 footprints |
+| `SafeBuck.pretty` (this project) | `LT8390_FE28_EB_TSSOP-28_EP4.75x2.74mm`: ADI FE28 (EB) land pattern with 2 × 5 thermal vias |
+
+## Datasheets and sources I read
+
+**Chosen parts**
+- LT8390 (Analog Devices): https://www.analog.com/media/en/technical-documentation/data-sheets/LT8390.pdf
+  (the copy I worked from was the public Chinese version hosted by LCSC: https://atta.szlcsc.com/upload/public/pdf/source/20221018/54D796C872281B2AD115D8A08B7AE0F6.pdf)
+- LM74930-Q1 (TI): https://www.ti.com/lit/ds/symlink/lm74930-q1.pdf
+- CSD18532Q5B (TI): https://www.ti.com/lit/ds/symlink/csd18532q5b.pdf
+- CSD19532Q5B (TI): https://www.ti.com/lit/ds/symlink/csd19532q5b.pdf
+- Coilcraft XAL1510: https://www.coilcraft.com/getmedia/cd1cef27-13f0-4568-8894-f7311475209b/xal1510.pdf
+- Panasonic hybrid polymer ZA/ZC series (C18): https://na.industrial.panasonic.com/products/capacitors/polymer-capacitors/lineup/polymer-hybrid-aluminum-electrolytic-capacitor/series/79
+- Panasonic EEE-FK1J101P (C11): https://www.digikey.ca/en/products/detail/panasonic-industry/EEE-FK1J101P/766195
+- Murata GRM32EC72A106KE05L (10 µF 100 V): https://www.digikey.ca/en/products/detail/murata-electronics/GRM32EC72A106KE05L/7319245
+- Murata PRF18 PTC: https://pim.murata.com/en-us/pim/details/?partNum=PRF18BC471QB5RB and spec https://pim.murata.com/asset/pim4/ptcForTemperatureSensor/SPEC_PRF18_471_PDF_PTCFORTEMPERATURESENSOR
+- Littelfuse NANO² 451/453 fuses: https://www.littelfuse.com/products/fuses/surface-mount-fuses/nano-2-fuses/451_453.aspx
+- Littelfuse SMBJ TVS: https://www.littelfuse.com/products/tvs-diodes/surface-mount/smbj.aspx
+
+**Compared and rejected (why, in the component guide)**
+- TI LM5176 https://www.ti.com/lit/ds/symlink/lm5176.pdf · LM5177 https://www.ti.com/lit/ds/symlink/lm5177.pdf (other buck-boost controllers)
+- TI LM74502-Q1 https://www.ti.com/lit/ds/symlink/lm74502-q1.pdf · TPS1211-Q1 https://www.ti.com/lit/ds/symlink/tps1211-q1.pdf · LM74700-Q1 https://www.ti.com/lit/ds/symlink/lm74700-q1.pdf (other front-ends)
+- TI CSD18540Q5B https://www.ti.com/lit/ds/symlink/csd18540q5b.pdf (best FET, but only 2 in stock at JLCPCB) · CSD18531Q5A https://www.ti.com/lit/ds/symlink/csd18531q5a.pdf · CSD18543Q3A https://www.ti.com/lit/ds/symlink/csd18543q3a.pdf · CSD19533Q5A https://www.ti.com/lit/ds/symlink/csd19533q5a.pdf
+- Vishay SiR5607DP P-MOSFET https://www.vishay.com/docs/62247/sir5607dp.pdf (first output-switch idea; rejected: it runs in linear mode in a dead short)
+- Bourns SRP1770TA https://www.bourns.com/docs/Product-Datasheets/SRP1770TA.pdf (first inductor choice; out of stock at JLCPCB)
+
+**The original module**
+- RoboticsBD QS-1212CCBD page: https://store.roboticsbd.com/power-module-adapter/4598-qs-1212ccbd-80w-automatic-buck-boost-power-supply-module-robotics-bangladesh.html
+- QS-1224CBD (sibling) test/teardown with reverse-engineered schematic (UC3843A): https://chinese-electronics-products-tested.blogspot.com/p/qs-1224cbd-dc-dc-converter-tested.html
+- Cirkit Designer QS-1212CCBD page: https://docs.cirkitdesigner.com/component/20a9b9bf-1da5-4816-b42f-8383cbccc88f/mdulo-qs-1212ccbd-80w-buck-boost
+- JLCPCB parts library (stock and LCSC numbers, checked 2026-11-18): https://jlcpcb.com/parts
+
+## Limitations (shotti kotha)
+
+- **Not built yet.** The numbers come from datasheet equations and a simple fault model, not from measurements.
+- **Loop compensation** (R22 10 k, C29 22 nF, C30 100 pF) is a calculated start value. Check it with a load step
+  (for example 1 A → 6 A) on an oscilloscope, or in LTspice (the LT8390 model is free from ADI).
+- **Switching loss** is an estimate (two models, about 1 % apart); real efficiency can be 1–2 % lower.
+- **JLCPCB rotations**: the CPL applies the usual KiCad → JLC corrections (SOT-23, QFN, TSSOP, CP_Elec). Always check the
+  placement preview.
+- **80 W needs a heatsink** (40 × 40 mm under the board). The bare board reaches about +57 °C above ambient at the worst
+  operating point.
+- The reversed-battery protection assumes a battery of 35 V or less (Q7 blocks VOUT + battery, up to 70 V).
