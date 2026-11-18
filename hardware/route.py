@@ -239,8 +239,34 @@ def setup_rules(board):
     for n in ('VIN_RAW', 'VIN_F', 'CSRC', 'VIN_P', 'SW1', 'SWL', 'SW2', 'VOUT_C', 'OUTF', 'OUTP', 'OUTN', 'GND'):
         ns.m_NetClassPatternAssignments.push_back(pcbnew.NETCLASS_PATTERN_ASSIGNMENT(n, 'POWER')) if hasattr(pcbnew, 'NETCLASS_PATTERN_ASSIGNMENT') else None
 
+def reroute(passes=100):
+    """second pass: keep the existing routes, let Freerouting finish the open connections"""
+    board = pcbnew.LoadBoard(PCB)
+    for z in list(board.Zones()):
+        if z.GetZoneName() == 'GND_top_fill': board.Remove(z)
+    ends = set()
+    for tr in board.GetTracks():
+        if tr.GetClass() == 'PCB_TRACK': ends.add((tr.GetStart().x, tr.GetStart().y)); ends.add((tr.GetEnd().x, tr.GetEnd().y))
+    for v in [v for v in board.GetTracks() if v.GetClass() == 'PCB_VIA']:
+        if v.GetNetname() == 'GND' and (v.GetPosition().x, v.GetPosition().y) not in ends: board.Remove(v)   # stitching
+    dsn = os.path.join(KDIR, 'SafeBuck-80.dsn'); ses = os.path.join(KDIR, 'SafeBuck-80.ses')
+    pcbnew.ExportSpecctraDSN(board, dsn); print('DSN keepouts:', tune_dsn(board, dsn))
+    if os.path.exists(ses): os.remove(ses)
+    print('freerouting ok:', run_freerouting(dsn, ses, passes))
+    for tr in list(board.GetTracks()): board.Remove(tr)
+    print('imported tracks/vias:', import_ses(board, ses))
+    full = poly_from_rects([(0.3, 0.3, W - 0.3, H - 0.3)])
+    add_zone(board, 'GND', pcbnew.F_Cu, full, 1, connection='tht', name='GND_top_fill')
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    print('stitching vias:', stitch_gnd(board))
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    board.Save(PCB); print('saved', PCB)
+    print('DRC:', drc_summary(board, os.path.join(KDIR, 'drc_routed.rpt')))
+
 if __name__ == '__main__':
-    mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import
+    mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import | reroute
+    if mode == 'reroute':
+        reroute(); sys.exit(0)
     board = pcbnew.LoadBoard(PLACED)
     bad = check_zones(board)
     print('zone conflicts:', len(bad)); [print('   ', b) for b in bad]

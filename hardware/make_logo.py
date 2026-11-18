@@ -18,12 +18,17 @@ DEFAULT_IMG = os.path.join(ROOT, 'docs', 'img', 'duburi_logo.png')
 PX_MM = 0.08                      # silkscreen pixel size (JLCPCB prints >= 0.15 mm lines reliably)
 
 def load(path):
-    im = Image.open(path)
-    if im.mode in ('RGBA', 'LA') or 'transparency' in im.info:
-        a = im.convert('RGBA').split()[-1]
-        return a.point(lambda v: 255 if v > 128 else 0)
-    g = ImageOps.grayscale(im)
-    return g.point(lambda v: 255 if v < 128 else 0)          # dark = ink
+    """ink = every opaque pixel that is not (near) white: coloured logo parts print as silkscreen,
+    white parts (e.g. the white DUBURI letters on the blue block) stay as bare solder mask"""
+    im = Image.open(path).convert('RGBA')
+    out = Image.new('L', im.size, 0)
+    src, dst = im.load(), out.load()
+    for y in range(im.height):
+        for x in range(im.width):
+            r, g, b, a = src[x, y]
+            if a > 128 and (min(r, g, b) < 200 or max(r, g, b) - min(r, g, b) > 40):
+                dst[x, y] = 255
+    return out
 
 def text_logo(text='DUBURI'):
     font = None
@@ -67,7 +72,7 @@ def to_footprint(mask, width_mm):
              '  (fp_text reference "LOGO1" (at 0 0) (layer "F.SilkS") hide (effects (font (size 1 1) (thickness 0.15))))',
              '  (fp_text value "Logo_Duburi" (at 0 0) (layer "F.Fab") hide (effects (font (size 1 1) (thickness 0.15))))']
     for (x0, y0, x1, y1) in rects:
-        X0, Y0, X1, Y1 = x0 * PX_MM - ox, y0 * PX_MM - oy, x1 * PX_MM - ox, y1 * PX_MM - oy
+        X0, Y0, X1, Y1 = x0 * PX_MM - ox, y0 * PX_MM - oy - 0.01, x1 * PX_MM - ox, y1 * PX_MM - oy + 0.01   # 0.01 mm overlap: no seams
         lines.append(f'  (fp_poly (pts (xy {X0:.3f} {Y0:.3f}) (xy {X1:.3f} {Y0:.3f}) (xy {X1:.3f} {Y1:.3f}) (xy {X0:.3f} {Y1:.3f}))'
                      ' (stroke (width 0) (type solid)) (fill solid) (layer "F.SilkS"))')
     lines.append(')')
@@ -76,7 +81,7 @@ def to_footprint(mask, width_mm):
 
 if __name__ == '__main__':
     img = sys.argv[1] if len(sys.argv) > 1 else (DEFAULT_IMG if os.path.exists(DEFAULT_IMG) else None)
-    width = float(sys.argv[2]) if len(sys.argv) > 2 else 22.0
+    width = float(sys.argv[2]) if len(sys.argv) > 2 else 28.0
     mask = load(img) if img else text_logo()
     n, w, h = to_footprint(mask, width)
     print(f'{OUT}: {n} rectangles, {w:.1f} x {h:.1f} mm, from {img or "text placeholder"}')

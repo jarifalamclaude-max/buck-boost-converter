@@ -194,9 +194,9 @@ def build(route=True):
     logo_path = os.path.join(LIBDIR, 'Logo_Duburi.kicad_mod')
     if os.path.exists(logo_path):
         lg = load_fp('SafeBuck:Logo_Duburi'); lg.SetReference('LOGO1'); lg.SetValue('Logo_Duburi')
-        board.Add(lg); lg.SetPosition(V(18.0, 40.4)); lg.Flip(V(18.0, 40.4), True)
-    for txt, x, y, sz in (('SafeBuck-80', 42.0, 38.4, 1.6), ('Designed by Jarif Alam', 42.0, 40.9, 1.25),
-                          ('80 W protected buck-boost - 2026', 42.0, 43.0, 0.85)):
+        board.Add(lg); lg.SetPosition(V(22.0, 37.6)); lg.Flip(V(22.0, 37.6), True)
+    for txt, x, y, sz in (('SafeBuck-80', 45.0, 35.3, 1.4), ('Designed by', 45.0, 37.7, 1.0), ('Jarif Alam', 45.0, 40.1, 1.6),
+                          ('80 W buck-boost - 2026', 45.0, 42.6, 0.8)):
         st = pcbnew.PCB_TEXT(board); st.SetText(txt); st.SetLayer(pcbnew.B_SilkS); st.SetMirrored(True)
         st.SetPosition(V(x, y)); st.SetTextSize(pcbnew.VECTOR2I(mm(sz), mm(sz))); st.SetTextThickness(mm(max(0.15, sz * 0.15)))
         board.Add(st)
