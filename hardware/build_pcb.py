@@ -184,11 +184,21 @@ def build(route=True):
               ('OUT- switched: never tie to IN-', 35.3, 47.0, 0.6, 0),
               ('CV', 29.4, 41.95, 0.9, 0), ('CC', 41.2, 41.95, 0.9, 0), ('CW+', 35.3, 44.4, 0.7, 90),
               ('IN', 1.25, 35.6, 0.6, 90), ('ON', 31.8, 39.3, 0.6, 0), ('OUT', 53.2, 46.5, 0.6, 90),
-              ('SafeBuck-80 v1.0', 32.5, 0.95, 0.9, 0)]
+              ('SafeBuck-80 v1.0 - DUBURI', 32.5, 0.95, 0.9, 0)]
     for txt, x, y, sz, rot in LABELS:
         st = pcbnew.PCB_TEXT(board); st.SetText(txt); st.SetLayer(pcbnew.F_SilkS)
         st.SetPosition(V(x, y)); st.SetTextAngleDegrees(rot)
         st.SetTextSize(pcbnew.VECTOR2I(mm(sz), mm(sz))); st.SetTextThickness(mm(max(0.12, sz * 0.15)))
+        board.Add(st)
+    # bottom side (all parts are on top, so the back is free): Duburi logo + designer credit, mirrored to read from below
+    logo_path = os.path.join(LIBDIR, 'Logo_Duburi.kicad_mod')
+    if os.path.exists(logo_path):
+        lg = load_fp('SafeBuck:Logo_Duburi'); lg.SetReference('LOGO1'); lg.SetValue('Logo_Duburi')
+        board.Add(lg); lg.SetPosition(V(18.0, 40.4)); lg.Flip(V(18.0, 40.4), True)
+    for txt, x, y, sz in (('SafeBuck-80', 42.0, 38.4, 1.6), ('Designed by Jarif Alam', 42.0, 40.9, 1.25),
+                          ('80 W protected buck-boost - 2026', 42.0, 43.0, 0.85)):
+        st = pcbnew.PCB_TEXT(board); st.SetText(txt); st.SetLayer(pcbnew.B_SilkS); st.SetMirrored(True)
+        st.SetPosition(V(x, y)); st.SetTextSize(pcbnew.VECTOR2I(mm(sz), mm(sz))); st.SetTextThickness(mm(max(0.15, sz * 0.15)))
         board.Add(st)
 
     # outline with 1 mm corner radius

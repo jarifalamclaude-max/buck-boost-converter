@@ -50,6 +50,7 @@ b = pcbnew.LoadBoard(os.path.join(KDIR, 'SafeBuck-80.kicad_pcb'))
 byref = {p['ref']: p for p in PARTS}
 bad, unlinked = [], []
 for fp in b.GetFootprints():
+    if fp.GetReference().startswith('LOGO'): continue          # board-only artwork, no schematic symbol
     p = byref.get(fp.GetReference())
     if p is None: bad.append(fp.GetReference()); continue
     for pad in fp.Pads():

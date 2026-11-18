@@ -57,6 +57,8 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN with keepouts → Freerouting → imports the session → GND fill, stitching vias, DRC → `kicad/SafeBuck-80.kicad_pcb` |
 | `hardware/make_schematic.py` | Generates the KiCad schematic `kicad/SafeBuck-80.kicad_sch` + project symbol library `SafeBuck.kicad_sym`; symbol UUIDs match the footprints |
 | `hardware/make_jlcpcb.py` | Makes the JLCPCB package (Gerber + drill zip, BOM, CPL) |
+| `hardware/make_logo.py` | Turns a logo image (`docs/img/duburi_logo.png`) into a silkscreen footprint for the board's bottom side; without an image it draws a "DUBURI" text badge |
+| `hardware/verify.py` | One-command check: netlist ↔ schematic ↔ PCB, footprint links, DRC summary |
 | `hardware/check_place.sh` | Quick placement check: build, list courtyard overlaps, SVG preview |
 | `hardware/kicad/SafeBuck-80.kicad_pro` | **KiCad project — open this.** Contains the schematic and the routed PCB |
 | `hardware/kicad/SafeBuck-80.kicad_sch` | Schematic (label style: every pin has a net label) |
