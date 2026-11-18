@@ -186,7 +186,7 @@ def stitch_gnd(board, spacing=2.6):
             X, Y = mm(OX + x), mm(OY + y)
             if far(X, Y) and filled_at(fz, pcbnew.F_Cu, X, Y, mm(0.75)) and filled_at(bz, pcbnew.B_Cu, X, Y, mm(0.75)):
                 v = pcbnew.PCB_VIA(board); v.SetPosition(pcbnew.VECTOR2I(X, Y))
-                v.SetWidth(mm(0.7)); v.SetDrill(mm(0.35)); v.SetNet(gnd); v.SetViaType(pcbnew.VIATYPE_THROUGH)
+                v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd); v.SetViaType(pcbnew.VIATYPE_THROUGH)
                 board.Add(v); n += 1; holes.append(pcbnew.VECTOR2I(X, Y))
             x += spacing
         y += spacing
@@ -215,7 +215,7 @@ def import_ses(board, path):
                     tr.SetLayer(layer); tr.SetNet(ni); board.Add(tr); ntr += 1
         for v in find(net, 'via'):
             m = re.search(r'_(\d+):(\d+)_um', str(v[1]))
-            dia, drill = (int(m.group(1)) * 1000, int(m.group(2)) * 1000) if m else (mm(0.7), mm(0.35))
+            dia, drill = (int(m.group(1)) * 1000, int(m.group(2)) * 1000) if m else (mm(0.6), mm(0.3))
             via = pcbnew.PCB_VIA(board); via.SetPosition(pcbnew.VECTOR2I(int(float(v[2]) * nm), int(-float(v[3]) * nm)))
             via.SetWidth(dia); via.SetDrill(drill); via.SetNet(ni); via.SetViaType(pcbnew.VIATYPE_THROUGH)
             board.Add(via); nvia += 1
@@ -239,22 +239,15 @@ def setup_rules(board):
     for n in ('VIN_RAW', 'VIN_F', 'CSRC', 'VIN_P', 'SW1', 'SWL', 'SW2', 'VOUT_C', 'OUTF', 'OUTP', 'OUTN', 'GND'):
         ns.m_NetClassPatternAssignments.push_back(pcbnew.NETCLASS_PATTERN_ASSIGNMENT(n, 'POWER')) if hasattr(pcbnew, 'NETCLASS_PATTERN_ASSIGNMENT') else None
 
-def reroute(passes=100):
-    """second pass: keep the existing routes, let Freerouting finish the open connections"""
-    board = pcbnew.LoadBoard(PCB)
-    for z in list(board.Zones()):
-        if z.GetZoneName() == 'GND_top_fill': board.Remove(z)
-    ends = set()
-    for tr in board.GetTracks():
-        if tr.GetClass() == 'PCB_TRACK': ends.add((tr.GetStart().x, tr.GetStart().y)); ends.add((tr.GetEnd().x, tr.GetEnd().y))
-    for v in [v for v in board.GetTracks() if v.GetClass() == 'PCB_VIA']:
-        if v.GetNetname() == 'GND' and (v.GetPosition().x, v.GetPosition().y) not in ends: board.Remove(v)   # stitching
-    dsn = os.path.join(KDIR, 'SafeBuck-80.dsn'); ses = os.path.join(KDIR, 'SafeBuck-80.ses')
-    pcbnew.ExportSpecctraDSN(board, dsn); print('DSN keepouts:', tune_dsn(board, dsn))
-    if os.path.exists(ses): os.remove(ses)
-    print('freerouting ok:', run_freerouting(dsn, ses, passes))
-    for tr in list(board.GetTracks()): board.Remove(tr)
-    print('imported tracks/vias:', import_ses(board, ses))
+def base_board():
+    """placed board + power zones + bottom GND plane (no tracks)"""
+    board = pcbnew.LoadBoard(PLACED)
+    for net, (prio, rects) in ZONES.items():
+        add_zone(board, net, pcbnew.F_Cu, poly_from_rects(rects), prio, name=f'{net}_top')
+    add_zone(board, 'GND', pcbnew.B_Cu, poly_from_rects([(0.3, 0.3, W - 0.3, H - 0.3)]), 0, connection='tht', name='GND_bottom')
+    return board
+
+def finish(board):
     full = poly_from_rects([(0.3, 0.3, W - 0.3, H - 0.3)])
     add_zone(board, 'GND', pcbnew.F_Cu, full, 1, connection='tht', name='GND_top_fill')
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
@@ -263,10 +256,51 @@ def reroute(passes=100):
     board.Save(PCB); print('saved', PCB)
     print('DRC:', drc_summary(board, os.path.join(KDIR, 'drc_routed.rpt')))
 
+def reroute(prev_ses, passes=100):
+    """second pass: start from a previous session's routes, let Freerouting finish the open connections"""
+    board = base_board()
+    print('previous routes:', import_ses(board, prev_ses))
+    dsn = os.path.join(KDIR, 'SafeBuck-80.dsn'); ses = os.path.join(KDIR, 'SafeBuck-80.ses')
+    pcbnew.ExportSpecctraDSN(board, dsn); print('DSN keepouts:', tune_dsn(board, dsn))
+    if os.path.exists(ses): os.remove(ses)
+    print('freerouting ok:', run_freerouting(dsn, ses, passes))
+    board = base_board()
+    print('imported tracks/vias:', import_ses(board, ses))
+    finish(board)
+
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import | reroute
     if mode == 'reroute':
-        reroute(); sys.exit(0)
+        reroute(sys.argv[2]); sys.exit(0)
+    if mode == 'ripup':                        # session + rip-up-and-reroute completion -> final board
+        import ripup_router as rr
+        board = base_board()
+        pads = []
+        for fp in board.GetFootprints():
+            for p_ in fp.Pads():
+                bb = p_.GetBoundingBox()
+                lay = [L for L, l in ((0, pcbnew.F_Cu), (1, pcbnew.B_Cu)) if p_.IsOnLayer(l)]
+                pads.append((p_.GetNetname(), f'{fp.GetReference()}.{p_.GetNumber()}',
+                             (bb.GetX() / 1e6, bb.GetY() / 1e6, (bb.GetX() + bb.GetWidth()) / 1e6, (bb.GetY() + bb.GetHeight()) / 1e6),
+                             lay, (p_.GetPosition().x / 1e6, p_.GetPosition().y / 1e6), p_.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH))
+        zones = {n: [(OX + a, OY + b, OX + c, OY + d) for (a, b, c, d) in r] for n, (p_, r) in ZONES.items()}
+        T, V = rr.parse_ses(sys.argv[2])
+        print('session tracks/vias:', len(T), len(V))
+        T, V, failed = rr.route_all(pads, zones, (OX, OY, OX + W, OY + H), T, V)
+        print('not routed:', sorted(failed))
+        for net, L, ax, ay, bx, by, wd, _ in T:
+            tr = pcbnew.PCB_TRACK(board); tr.SetStart(pcbnew.VECTOR2I(mm(ax), mm(ay))); tr.SetEnd(pcbnew.VECTOR2I(mm(bx), mm(by)))
+            tr.SetWidth(mm(wd)); tr.SetLayer(pcbnew.F_Cu if L == 0 else pcbnew.B_Cu); tr.SetNet(board.FindNet(net)); board.Add(tr)
+        for net, x, y, d, _ in V:
+            v = pcbnew.PCB_VIA(board); v.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y))); v.SetWidth(mm(d)); v.SetDrill(mm(0.35))
+            v.SetNet(board.FindNet(net)); v.SetViaType(pcbnew.VIATYPE_THROUGH); board.Add(v)
+        finish(board); sys.exit(0)
+    if mode == 'complete':                     # import a session, finish the open links, fill, DRC
+        from complete_routes import complete
+        board = base_board()
+        print('imported tracks/vias:', import_ses(board, sys.argv[2]))
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H): print('  ', line)
+        finish(board); sys.exit(0)
     board = pcbnew.LoadBoard(PLACED)
     bad = check_zones(board)
     print('zone conflicts:', len(bad)); [print('   ', b) for b in bad]

@@ -16,7 +16,7 @@ Upload these three files, nothing else is needed:
 | Layers | **2** | |
 | Dimensions | auto (65 × 48 mm) | |
 | PCB thickness | 1.6 mm | |
-| **Outer copper weight** | **2 oz** | Carries 9.5 A input. The layout uses 0.25 mm tracks / 0.21 mm gaps, which meets the 2 oz rules |
+| **Outer copper weight** | **2 oz** | Carries 9.5 A input. The layout uses 0.2 mm tracks / 0.205 mm gaps, the 2 oz minimum |
 | Surface finish | HASL lead-free (or ENIG) | |
 | Via covering | Tented | |
 | Remove order number | optional ("Specify a location" puts it under the silkscreen text) | |

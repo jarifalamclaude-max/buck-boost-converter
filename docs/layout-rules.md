@@ -11,9 +11,9 @@ datasheet layout section plus the buck-design notes you gave me.
 | Layers | 2 (top = power + parts, bottom = solid GND) | Cheap, and 2 oz copper carries 10 A |
 | Copper | 2 oz (70 µm) outer | 9.5 A input current, low I²R heating |
 | Board | 65 × 48 mm, 1.6 mm FR-4, 1 mm corner radius | Same size as the QS-1212CCBD module |
-| Track / gap (signals) | 0.25 mm / 0.21 mm | JLCPCB minimum for 2 oz is 0.2 mm / 0.2 mm (8 mil) |
+| Track / gap (signals) | 0.20 mm / 0.205 mm | JLCPCB minimum for 2 oz copper is 0.2 mm / 0.2 mm (8 mil) |
 | Zone clearance | 0.25 mm | Power copper to other nets |
-| Via | 0.7 mm pad / 0.35 mm drill | JLCPCB standard via (no extra cost) |
+| Via | 0.6 mm pad / 0.3 mm drill | JLCPCB standard via (no extra cost) |
 | Copper to board edge | 0.3 mm | JLCPCB routed-edge rule |
 
 ## 2. Hot loops (the most important rule)

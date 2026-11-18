@@ -28,8 +28,9 @@ PLACE = {
     # ---- controller (top centre). U1 rot0: gate pins at the top of both columns,
     #      analog pins (VREF/CTRL/ISP left, VC/RT/FB/SS right) at the lower half.
     'U1': (37.4, 7.0, 0),
-    'C19': (32.6, 6.6, 0), 'C21': (32.6, 8.2, 0), 'C22': (32.6, 9.8, 0),   # VIN, INTVCC (left, pins 7-8)
-    'C23': (32.6, 11.4, 0), 'C34': (32.6, 13.0, 0),                        # VREF, CTRL filter (pins 12-13)
+    # bypass caps left of U1, rotated 180 so pad 1 (signal) faces the pin and the GND pad faces away
+    'C19': (31.9, 6.86, 180), 'C21': (31.96, 8.97, 180), 'C22': (32.05, 10.92, 180),   # VIN, INTVCC (pins 7-8)
+    'C23': (32.05, 12.52, 180), 'C34': (33.26, 14.06, 180),                        # VREF, CTRL filter (pins 12-13)
     'C20': (42.4, 4.4, 0), 'R45': (44.6, 4.4, 0),                          # VOUT pin 24 RC filter
     'R20': (42.4, 6.0, 0), 'R22': (42.4, 7.6, 0), 'C29': (45.4, 7.6, 90), 'C30': (42.4, 9.2, 0),  # RT, VC
     'R25': (45.4, 2.4, 90), 'C33': (47.0, 2.4, 90),                        # FB bottom + filter

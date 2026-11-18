@@ -89,8 +89,8 @@ def build(route=True):
     ds.m_HoleToHoleMin = mm(0.3)
     ds.SetBoardThickness(mm(1.6))
     nc = ds.m_NetSettings.m_DefaultNetClass
-    # 2 oz outer copper at JLCPCB: >= 0.2 mm (8 mil) track and gap -> use 0.25 mm tracks, 0.21 mm gaps
-    nc.SetClearance(mm(0.21)); nc.SetTrackWidth(mm(0.25)); nc.SetViaDiameter(mm(0.7)); nc.SetViaDrill(mm(0.35))
+    # 2 oz outer copper at JLCPCB: >= 0.2 mm (8 mil) track and gap -> 0.2 mm tracks, 0.205 mm gaps, 0.6/0.3 mm vias
+    nc.SetClearance(mm(0.205)); nc.SetTrackWidth(mm(0.2)); nc.SetViaDiameter(mm(0.6)); nc.SetViaDrill(mm(0.3))
 
     # nets
     netobj = {}
