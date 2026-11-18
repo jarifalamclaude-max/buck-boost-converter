@@ -74,7 +74,7 @@ LCSC = {
     'C30': 'C14858', 'C32': 'C14663', 'C33': 'C1671', 'C34': 'C57112',
     # resistors
     'R1': 'C17928', 'R3': 'C17513', 'R4': 'C22775', 'R5': 'C17597', 'R6': 'C22821', 'R7': 'C23042',
-    'R11': 'C18028', 'R12': 'C18028', 'R16': 'C21189', 'R17': 'C21189', 'R20': 'C22875', 'R21': 'C25803',
+    'R11': 'C18028', 'R12': 'C18028', 'R20': 'C22875', 'R21': 'C25803',
     'R22': 'C25804', 'R23': 'C17539', 'R24': 'C23059', 'R25': 'C23068', 'R26': 'C4184', 'R27': 'C25971',
     'R28': 'C22859', 'R29': 'C22859', 'R30': 'C4190', 'R32': 'C17902', 'R33': 'C25804', 'R34': 'C23162',
     'R35': 'C25819', 'R36': 'C23212', 'R37': 'C25971', 'R38': 'C25804', 'R39': 'C25804', 'R40': 'C25803',
@@ -140,7 +140,7 @@ B = 'converter'
 part('U1', 'LT8390', 'LT8390', {
     '1': 'BG1', '2': 'BST1', '3': 'SW1', '4': 'TG1', '5': 'LSP', '6': 'LSN', '7': 'VIN_P', '8': 'INTVCC',
     '9': 'EN', '10': 'GND', '11': 'VREF', '12': 'VREF', '13': 'CTRL', '14': 'ISP_R', '15': 'ISN_R',
-    '16': 'ISMON', '17': 'PGOOD', '18': 'SS', '19': 'FB', '20': 'VC', '21': 'RT', '22': 'INTVCC',
+    '16': 'ISMON', '17': 'NC_U1_PGOOD', '18': 'SS', '19': 'FB', '20': 'VC', '21': 'RT', '22': 'INTVCC',
     '23': 'NC_U1_LOADTG', '24': 'VOUT_U1', '25': 'TG2', '26': 'SW2', '27': 'BST2', '28': 'BG2', '29': 'GND'},
     'LT8390EFE#TRPBF', 'Analog Devices', '4-switch synchronous buck-boost controller (CV via FB, CC via CTRL)', B)
 part('Q3', 'CSD18532Q5B', 'SON5x6', {'1': 'SW1', '2': 'SW1', '3': 'SW1', '4': 'TG1', '5': 'VIN_P'}, 'CSD18532Q5B', 'TI', 'Switch A (buck high side), 60 V, 4.3 mOhm max @4.5 V, Qg 19 nC @4.5 V', B)
@@ -163,14 +163,8 @@ part('C20', '1uF 100V X7R', 'C0805', {'1': 'VOUT_U1', '2': 'GND'}, '', '', 'LT83
 part('C21', '10uF 16V X7R', 'C0805', {'1': 'INTVCC', '2': 'GND'}, '', '', 'INTVCC (datasheet min 4.7 uF; 10 uF X7R keeps >4.7 uF at 5 V and works to 125 C)', B)
 part('C22', '1uF 16V X7R', 'C0603', {'1': 'INTVCC', '2': 'GND'}, '', '', 'Extra INTVCC decoupling at the pin', B)
 part('C23', '470nF 16V X7R', 'C0603', {'1': 'VREF', '2': 'GND'}, '', '', 'VREF bypass (datasheet 0.47 uF)', B)
-part('R16', '0R', 'R0603', {'1': 'BST1', '2': 'BST1C'}, '', '', 'BST1 series: 0R, raise to 2-10R if SW1 rings (EMI tune)', B)
-part('C24', '1uF 16V X7R', 'C0603', {'1': 'BST1C', '2': 'SW1'}, '', '', 'Bootstrap cap A (>=100x Qg)', B)
-part('R17', '0R', 'R0603', {'1': 'BST2', '2': 'BST2C'}, '', '', 'BST2 series: 0R, raise to 2-10R if SW2 rings', B)
-part('C25', '1uF 16V X7R', 'C0603', {'1': 'BST2C', '2': 'SW2'}, '', '', 'Bootstrap cap D', B)
-part('R18', '2.2R', 'R1206', {'1': 'SW1', '2': 'SN1'}, '', '', 'SW1 RC snubber (DNP, fit only if scope shows ringing)', B, dnp=True)
-part('C26', '470pF 100V', 'C0805', {'1': 'SN1', '2': 'GND'}, '', '', 'SW1 RC snubber (DNP)', B, dnp=True)
-part('R19', '2.2R', 'R1206', {'1': 'SW2', '2': 'SN2'}, '', '', 'SW2 RC snubber (DNP)', B, dnp=True)
-part('C27', '470pF 100V', 'C0805', {'1': 'SN2', '2': 'GND'}, '', '', 'SW2 RC snubber (DNP)', B, dnp=True)
+part('C24', '1uF 16V X7R', 'C0603', {'1': 'BST1', '2': 'SW1'}, '', '', 'Bootstrap cap A (>=100x Qg), right at U1 pins 2-3', B)
+part('C25', '1uF 16V X7R', 'C0603', {'1': 'BST2', '2': 'SW2'}, '', '', 'Bootstrap cap D, right at U1 pins 26-27', B)
 part('R20', '140k 1%', 'R0603', {'1': 'RT', '2': 'GND'}, '', '', 'RT: 300 kHz (datasheet table 1)', B)
 part('C28', '220nF 16V X7R', 'C0603', {'1': 'SS', '2': 'GND'}, '', '', 'Soft-start (10x VC cap)', B)
 part('R21', '100k 1%', 'R0603', {'1': 'SS', '2': 'VREF'}, '', '', 'SS->VREF 100k = keep-running mode (CC into a short)', B)
@@ -196,7 +190,6 @@ part('D9', '1N4148WS', 'SOD323', {'2': 'ISN_R', '1': 'ISP_R'}, '1N4148WS', '', '
 part('R30', '2.2k', 'R0603', {'1': 'INTVCC', '2': 'GLED'}, '', '', 'GREEN LED current ~1 mA', B)
 part('LED1', 'GREEN ON', 'LED0805', {'2': 'GLED', '1': 'GND'}, '', '', 'Power ON (controller alive)', B)
 part('TP1', 'ISMON', 'TP', {'1': 'ISMON'}, '', '', 'Output current monitor: 0.25 V + 10 x V(RIS)', B)
-part('TP2', 'PGOOD', 'TP', {'1': 'PGOOD'}, '', '', 'Power good (open drain, low = in regulation)', B)
 
 # =====================================================================================
 # 3. OUTPUT: CC sense, low-side reverse-battery switch, fast trip, polarity hold

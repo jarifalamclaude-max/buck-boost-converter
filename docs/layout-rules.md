@@ -41,8 +41,9 @@ How it is done on this board:
   a corridor to the inductor pad). A large switch-node area radiates EMI; a thin one heats up.
 * No sensitive trace (FB, CTRL, VC, ISP/ISN, LSP/LSN) runs on the top layer under or next to a switch
   node. On the bottom layer such a trace may cross under a switch node only at right angles.
-* The R/C snubber footprints R18/C26 (SW1) and R19/C27 (SW2) are placed but **not fitted**. Fit them only if
-  an oscilloscope shows ringing above about 10 V at the switch node.
+* There are no snubber footprints; they were removed to free routing space around U1. If an oscilloscope shows more than
+  about 10 V of ringing at SW1 or SW2, solder a 2.2 Ω + 470 pF RC (0805/1206) by hand from the switch node to GND, right at
+  Q4 or Q5. The bootstrap caps C24/C25 sit directly at U1 pins 2–3 and 26–27, with no series resistor.
 
 ## 4. Kelvin current sensing
 

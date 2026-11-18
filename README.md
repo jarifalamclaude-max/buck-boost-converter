@@ -54,7 +54,8 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/netlist.py` | **Single source of truth.** Every part: ref, value, footprint, MPN, LCSC number, role and pad → net map. Everything below is generated from this file |
 | `hardware/placement.py` | Position/rotation of every part on the 65 × 48 mm board (hot-loop layout explained in the header) |
 | `hardware/build_pcb.py` | Builds the custom LT8390 footprint, places all footprints, assigns nets, draws the outline, runs DRC → `kicad/SafeBuck-80_placed.kicad_pcb` |
-| `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN with keepouts → Freerouting → imports the session → GND fill, stitching vias, DRC → `kicad/SafeBuck-80.kicad_pcb` |
+| `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN (zones as fixed wires, net-tie keepouts) → Freerouting → imports the session → GND fill, stitching vias, DRC → `kicad/SafeBuck-80.kicad_pcb` |
+| `hardware/complete_routes.py` | Two-layer grid A* router (0.2 mm track, 0.205 mm gap) that finishes the few connections Freerouting leaves open |
 | `hardware/make_schematic.py` | Generates the KiCad schematic `kicad/SafeBuck-80.kicad_sch` + project symbol library `SafeBuck.kicad_sym`; symbol UUIDs match the footprints |
 | `hardware/make_jlcpcb.py` | Makes the JLCPCB package (Gerber + drill zip, BOM, CPL) |
 | `hardware/make_logo.py` | Turns a logo image (`docs/img/duburi_logo.png`) into a silkscreen footprint for the board's bottom side; without an image it draws a "DUBURI" text badge |
@@ -74,7 +75,7 @@ output short and a reversed battery on the output. Every one of these only light
 Regenerate everything (Ubuntu with KiCad 7, Java, Node + Playwright):
 
 ```bash
-cd hardware && /usr/bin/python3 build_pcb.py && /usr/bin/python3 route.py route && python3 make_schematic.py && python3 make_jlcpcb.py && cd .. && python3 docs/make_docs.py
+cd hardware && python3 make_logo.py && /usr/bin/python3 build_pcb.py && /usr/bin/python3 route.py route && /usr/bin/python3 route.py complete kicad/SafeBuck-80.ses && python3 make_schematic.py && /usr/bin/python3 verify.py && python3 make_jlcpcb.py && cd .. && python3 docs/make_docs.py
 ```
 
 ## Block diagram
@@ -96,7 +97,7 @@ J1 VIN+ ─ F1 15A ─┬─ D1 TVS        ┌──────── LT8390 4-
 | Input reversed (up to −60 V) | LM74930 + Q2 block, D1 is bidirectional | red IN LED, no current, nothing hot |
 | Input 43–60 V DC | LM74930 OV opens Q1 (back on below 39.4 V; worst case ≥ 37.4 V, so a 36 V supply always restarts) | red IN LED, output off |
 | Input shorted while running | D17 (15 V zener) clamps Q1's gate-source; Q2 blocks reverse current | output off, no damage |
-| Input spike (hot-plug, cable inductance) | D1 SMBJ58CA, R1/C1 snubber, C11 ESR damping | clamped |
+| Input spike (hot-plug, cable inductance) | D1 SMBJ60CA, R1/C1 input RC damper, C11 ESR damping | clamped |
 | Input below 7.5 V | LM74930 UV + LT8390 EN/UVLO | output off, red IN LED |
 | Output short circuit | LT8390 CC limit (keep-running) + 62.5 A instant ISOC | runs at the CC current, recovers when the short is removed |
 | Battery reversed on the output (≤ 35 V), any CV setting | Q9 (current > 83 A) or Q11 (OUT+ < −1.85 V) turns Q7 off within 1–6 µs, Q10 holds it off; D15 keeps VOUT_C above about −1.5 V | red OUT LED, peak 52–184 A for a few µs, Q7 avalanche ≤ 19 mJ (rated 274 mJ) |

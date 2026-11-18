@@ -68,9 +68,11 @@ class Grid:
         k = j * self.nx + i; v = self.c[L][k]
         return v == 0 or (v == 1 and self.owner[L].get(k) == net)
 
+MARGIN = 0.06                   # covers the 0.1 mm grid discretisation (diagonal moves, cell rounding)
+
 def build_grid(board, zones, ox, oy, W, H):
     g = Grid(ox, oy, W, H)
-    r_tr = CL + TW / 2
+    r_tr = CL + TW / 2 + MARGIN
     edge = 0.3 + TW / 2
     for L in (0, 1):                                   # board edge
         g.mark_rect(L, None, ox - 1, oy - 1, ox + W + 1, oy + edge, 0)
@@ -88,6 +90,12 @@ def build_grid(board, zones, ox, oy, W, H):
                 continue
             for L, lay in ((0, pcbnew.F_Cu), (1, pcbnew.B_Cu)):
                 if p.IsOnLayer(lay): g.mark_rect(L, net, x0, y0, x1, y1, r_tr)
+        if fp.GetReference().startswith('NT'):          # tie copper belongs to the Kelvin net (pad 1): others keep out
+            kel = [p.GetNetCode() for p in fp.Pads() if p.GetNumber() == '1'][0]
+            for it in fp.GraphicalItems():
+                if it.GetLayer() == pcbnew.F_Cu:
+                    bb = it.GetBoundingBox()
+                    g.mark_rect(0, kel, bb.GetX() / NM, bb.GetY() / NM, (bb.GetX() + bb.GetWidth()) / NM, (bb.GetY() + bb.GetHeight()) / NM, r_tr)
     for t in board.GetTracks():
         net = t.GetNetCode() or None
         if t.GetClass() == 'PCB_VIA':
@@ -255,7 +263,13 @@ def item_cells(g, it, zones_by_net=None):
     k, out = it[0], []
     if k == 'pad':
         x0, y0, x1, y1 = (v / NM for v in it[1])
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        x0, x1 = min(cx, x0 + 0.12), max(cx, x1 - 0.12); y0, y1 = min(cy, y0 + 0.12), max(cy, y1 - 0.12)
         i0, j0 = g.cell(x0, y0); i1, j1 = g.cell(x1, y1)
+        i0, j0 = int(math.ceil((x0 - g.x0) / G)), int(math.ceil((y0 - g.y0) / G))
+        i1, j1 = int(math.floor((x1 - g.x0) / G)), int(math.floor((y1 - g.y0) / G))
+        if i1 < i0: i0 = i1 = g.cell(cx, cy)[0]
+        if j1 < j0: j0 = j1 = g.cell(cx, cy)[1]
         for L in it[2]:
             out += [(L, i, j) for i in range(i0, i1 + 1) for j in range(j0, j1 + 1)]
     elif k == 'via':
@@ -271,9 +285,10 @@ def astar2(g, net, src, dst, via_cost=12.0, limit=1500000):
     I = [c[1] for c in dst]; J = [c[2] for c in dst]
     bi0, bi1, bj0, bj1 = min(I), max(I), min(J), max(J)
     def h(i, j): return math.hypot(max(bi0 - i, 0, i - bi1), max(bj0 - j, 0, j - bj1))
-    rv = int(math.ceil((VIA_D / 2 - TW / 2) / G))
-    disk = [(a, b) for a in range(-rv, rv + 1) for b in range(-rv, rv + 1) if a * a + b * b <= rv * rv]
-    def via_ok(i, j): return all(g.free(L, net, i + a, j + b) or (L, i + a, j + b) in src or (L, i + a, j + b) in dst for L in (0, 1) for a, b in disk)
+    rv = (VIA_D / 2 - TW / 2) / G + 0.6
+    R_ = int(math.ceil(rv))
+    disk = [(a, b) for a in range(-R_, R_ + 1) for b in range(-R_, R_ + 1) if a * a + b * b <= rv * rv]
+    def via_ok(i, j): return all(g.free(L, net, i + a, j + b) for L in (0, 1) for a, b in disk)
     best, prev, openh = {}, {}, []
     for s in src:
         best[s] = 0.0; heapq.heappush(openh, (h(s[1], s[2]), 0.0, s))
@@ -315,20 +330,24 @@ def emit(board, g, ni, net, path):
         pts = simplify([(c[1], c[2]) for c in r])
         xy = [(g.x0 + i * G, g.y0 + j * G) for i, j in pts]
         for (x0, y0), (x1, y1) in zip(xy, xy[1:]):
-            add_track(board, ni, L, x0, y0, x1, y1); g.mark_seg(L, net, x0, y0, x1, y1, TW + CL); nseg += 1
+            add_track(board, ni, L, x0, y0, x1, y1); g.mark_seg(L, net, x0, y0, x1, y1, TW + CL + MARGIN); nseg += 1
     for a, b in zip(path, path[1:]):
         if a[0] != b[0]:
             x, y = g.x0 + a[1] * G, g.y0 + a[2] * G
             add_via(board, ni, x, y); nvia += 1
-            for L in (0, 1): g.mark_seg(L, net, x, y, x, y, VIA_D / 2 + CL + TW / 2)
+            for L in (0, 1): g.mark_seg(L, net, x, y, x, y, VIA_D / 2 + CL + TW / 2 + MARGIN)
     return nseg, nvia
 
-def complete(board, zones, ox, oy, W, H, skip=('GND',)):
+def complete(board, zones, ox, oy, W, H, skip=('GND',), order=()):
     open_ = clusters(board)
     log = []
     g = build_grid(board, zones, ox, oy, W, H)
     zr = {n: r for n, r in zones}
-    for net, groups in sorted(open_.items()):
+    rank = {n: k for k, n in enumerate(order)}
+    def prio(kv):
+        nm = board.GetNetInfo().GetNetItem(kv[0]).GetNetname()
+        return (rank.get(nm, len(rank)), kv[0])
+    for net, groups in sorted(open_.items(), key=prio):
         ni = board.GetNetInfo().GetNetItem(net); name = ni.GetNetname()
         if name in skip: continue
         groups.sort(key=len, reverse=True)

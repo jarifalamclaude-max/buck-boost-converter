@@ -47,8 +47,8 @@ Upload these three files, nothing else is needed:
    KiCad → JLC corrections for SOT-23, QFN, TSSOP and electrolytic caps.
 3. **Through-hole parts** (J1, J2 screw terminals; RV1, RV2 pots): let JLC fit them (THT assembly), or delete them from the
    BOM and solder them yourself. They are easy, large pins.
-4. **Not fitted (DNP):** R18, C26, R19, C27 (snubbers), the net-ties NT1–NT4, the test points and the mounting holes are not in
-   the BOM. That is intentional.
+4. **Not in the BOM on purpose:** the net-ties NT1–NT4, test point TP1, the logo and the mounting holes. They are copper or
+   silkscreen only.
 5. **Smallest parts:** D16 is SOD-523 and R47 is 0402. Both are standard for JLC.
 
 ## After delivery

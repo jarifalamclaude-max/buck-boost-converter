@@ -4,7 +4,9 @@ Route SafeBuck-80 (2-layer, 2 oz):
   2. hot-loop GND returns as F.Cu GND zones, full GND plane on B.Cu
   3. Freerouting (Specctra DSN/SES) for every remaining connection
   4. F.Cu GND fill, GND stitching vias, zone fill, DRC
-Run with KiCad's python after build_pcb.py:   /usr/bin/python3 route.py [check|dsn|route]
+Run with KiCad's python after build_pcb.py:
+  /usr/bin/python3 route.py route                      # Freerouting from scratch
+  /usr/bin/python3 route.py complete kicad/SafeBuck-80.ses   # finish open links with complete_routes.py, fill, DRC
 """
 import os, sys, re, subprocess, collections
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -192,7 +194,7 @@ def stitch_gnd(board, spacing=2.6):
         y += spacing
     return n
 
-def import_ses(board, path):
+def import_ses(board, path, skip=()):
     """add Freerouting's wires and vias from a Specctra session file (KiCad 7's python
     ImportSpecctraSES() only works inside the GUI). SES units: 1/res um, y axis up."""
     from make_schematic import parse, find
@@ -202,6 +204,7 @@ def import_ses(board, path):
     nm = 1000.0 / res
     ntr = nvia = 0
     for net in find(find(routes, 'network_out')[0], 'net'):
+        if str(net[1]) in skip: continue
         ni = board.FindNet(str(net[1]))
         for w in find(net, 'wire'):
             for pth in find(w, 'path'):
@@ -272,34 +275,12 @@ if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'route'      # check | dsn | route | import | reroute
     if mode == 'reroute':
         reroute(sys.argv[2]); sys.exit(0)
-    if mode == 'ripup':                        # session + rip-up-and-reroute completion -> final board
-        import ripup_router as rr
-        board = base_board()
-        pads = []
-        for fp in board.GetFootprints():
-            for p_ in fp.Pads():
-                bb = p_.GetBoundingBox()
-                lay = [L for L, l in ((0, pcbnew.F_Cu), (1, pcbnew.B_Cu)) if p_.IsOnLayer(l)]
-                pads.append((p_.GetNetname(), f'{fp.GetReference()}.{p_.GetNumber()}',
-                             (bb.GetX() / 1e6, bb.GetY() / 1e6, (bb.GetX() + bb.GetWidth()) / 1e6, (bb.GetY() + bb.GetHeight()) / 1e6),
-                             lay, (p_.GetPosition().x / 1e6, p_.GetPosition().y / 1e6), p_.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH))
-        zones = {n: [(OX + a, OY + b, OX + c, OY + d) for (a, b, c, d) in r] for n, (p_, r) in ZONES.items()}
-        T, V = rr.parse_ses(sys.argv[2])
-        print('session tracks/vias:', len(T), len(V))
-        T, V, failed = rr.route_all(pads, zones, (OX, OY, OX + W, OY + H), T, V)
-        print('not routed:', sorted(failed))
-        for net, L, ax, ay, bx, by, wd, _ in T:
-            tr = pcbnew.PCB_TRACK(board); tr.SetStart(pcbnew.VECTOR2I(mm(ax), mm(ay))); tr.SetEnd(pcbnew.VECTOR2I(mm(bx), mm(by)))
-            tr.SetWidth(mm(wd)); tr.SetLayer(pcbnew.F_Cu if L == 0 else pcbnew.B_Cu); tr.SetNet(board.FindNet(net)); board.Add(tr)
-        for net, x, y, d, _ in V:
-            v = pcbnew.PCB_VIA(board); v.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y))); v.SetWidth(mm(d)); v.SetDrill(mm(0.35))
-            v.SetNet(board.FindNet(net)); v.SetViaType(pcbnew.VIATYPE_THROUGH); board.Add(v)
-        finish(board); sys.exit(0)
     if mode == 'complete':                     # import a session, finish the open links, fill, DRC
         from complete_routes import complete
         board = base_board()
-        print('imported tracks/vias:', import_ses(board, sys.argv[2]))
-        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H): print('  ', line)
+        rip = sys.argv[3].split(',') if len(sys.argv) > 3 else []
+        print('imported tracks/vias:', import_ses(board, sys.argv[2], set(rip)), 'ripped:', rip)
+        for line in complete(board, [(n, r) for n, (p_, r) in ZONES.items()], OX, OY, W, H, order=rip): print('  ', line)
         finish(board); sys.exit(0)
     board = pcbnew.LoadBoard(PLACED)
     bad = check_zones(board)
