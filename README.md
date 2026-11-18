@@ -40,6 +40,7 @@ output short and a reversed battery on the output. Every one of these only light
 | [`docs/SafeBuck-80_Build_Guide.pdf`](docs/SafeBuck-80_Build_Guide.pdf) | **Noob-der jonno**: JLCPCB order step by step, first power-up, CV/CC set, protection test, troubleshooting |
 | [`docs/SafeBuck-80_Component_Guide.pdf`](docs/SafeBuck-80_Component_Guide.pdf) | **Kon component keno**: every part's role, why it was chosen, full BOM with LCSC numbers |
 | [`docs/SafeBuck-80_Schematic.pdf`](docs/SafeBuck-80_Schematic.pdf) | Full schematic (exported from KiCad) |
+| [`docs/current_flow/index.html`](docs/current_flow/index.html) | **Current flow page**: 3D board, step-by-step current path (buck, boost, control, input ulta, output-e battery ulta, short), threshold-set-kora part-gulo formula shoho, shob part-er table. Folder download kore browser-e kholo (ba web server diye) |
 | [`docs/layout-rules.md`](docs/layout-rules.md) | PCB layout rules used (hot loops, Kelvin sense, ground, thermal) |
 | [`jlcpcb/ORDER_NOTES.md`](jlcpcb/ORDER_NOTES.md) | What to upload and which settings to pick at JLCPCB |
 
