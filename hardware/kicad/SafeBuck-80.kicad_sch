@@ -1221,7 +1221,7 @@
     (property "MPN" "WJ500V-5.08-2P" (at 31.75 45.72 0) (effects (font (size 1.27 1.27)) hide))
     (property "Manufacturer" "Kangnex" (at 31.75 45.72 0) (effects (font (size 1.27 1.27)) hide))
     (property "LCSC" "C8465" (at 31.75 45.72 0) (effects (font (size 1.27 1.27)) hide))
-    (property "Role" "Input screw terminal 5.08 mm, 18 A (pin 1 = +)"
+    (property "Role" "Input screw terminal 5.08 mm, 18 A, wire entry at the board edge (+ / - on the silkscreen)"
       (at 31.75 45.72 0)
       (effects (font (size 1.27 1.27)) hide))
     (pin "1" (uuid "8ae1c8fd-0a4d-5d7b-a567-4cebbd008ed7"))
@@ -1232,7 +1232,7 @@
     (pts (xy 26.67 45.72) (xy 24.13 45.72))
     (stroke (width 0) (type default))
     (uuid "32a2bb27-bfd9-54b3-ab6b-ce32c6a486f6"))
-  (label "VIN_RAW"
+  (label "GND"
     (at 24.13 45.72 180)
     (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -1241,7 +1241,7 @@
     (pts (xy 26.67 48.26) (xy 24.13 48.26))
     (stroke (width 0) (type default))
     (uuid "6187bd74-4571-5065-a335-8b73eca42403"))
-  (label "GND"
+  (label "VIN_RAW"
     (at 24.13 48.26 180)
     (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -5230,7 +5230,7 @@
     (property "MPN" "WJ500V-5.08-2P" (at 447.04 68.58 0) (effects (font (size 1.27 1.27)) hide))
     (property "Manufacturer" "Kangnex" (at 447.04 68.58 0) (effects (font (size 1.27 1.27)) hide))
     (property "LCSC" "C8465" (at 447.04 68.58 0) (effects (font (size 1.27 1.27)) hide))
-    (property "Role" "Output terminal 5.08 mm (pin 1 = +). OUT- is switched: never tie to VIN-"
+    (property "Role" "Output terminal 5.08 mm, wire entry at the board edge (+ / - on the silkscreen). OUT- is switched: never tie to VIN-"
       (at 447.04 68.58 0)
       (effects (font (size 1.27 1.27)) hide))
     (pin "1" (uuid "3fabfac6-7798-570e-8d0b-2db726518077"))
@@ -5241,7 +5241,7 @@
     (pts (xy 441.96 68.58) (xy 439.42 68.58))
     (stroke (width 0) (type default))
     (uuid "39dfed3a-af40-5441-9c74-dbf36d726cf1"))
-  (label "OUTP"
+  (label "OUTN"
     (at 439.42 68.58 180)
     (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -5250,7 +5250,7 @@
     (pts (xy 441.96 71.12) (xy 439.42 71.12))
     (stroke (width 0) (type default))
     (uuid "753c99a4-0f5f-5f69-8cf4-9d63e5deccca"))
-  (label "OUTN"
+  (label "OUTP"
     (at 439.42 71.12 180)
     (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))

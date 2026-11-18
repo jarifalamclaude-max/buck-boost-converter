@@ -96,7 +96,7 @@ def part(ref, value, fp, pins, mpn='', mfr='', role='', block='', dnp=False, lcs
 # 1. INPUT PROTECTION  (LM74930: reverse -60 V, OV cut-off 41 V, UV 7.6 V; F1 for internal failure)
 # =====================================================================================
 B = 'input'
-part('J1', 'VIN 9-36V', 'TERM', {'1': 'VIN_RAW', '2': 'GND'}, 'WJ500V-5.08-2P', 'Kangnex', 'Input screw terminal 5.08 mm, 18 A (pin 1 = +)', B)
+part('J1', 'VIN 9-36V', 'TERM', {'1': 'GND', '2': 'VIN_RAW'}, 'WJ500V-5.08-2P', 'Kangnex', 'Input screw terminal 5.08 mm, 18 A, wire entry at the board edge (+ / - on the silkscreen)', B)
 part('F1', '15A 65V', 'FUSE', {'1': 'VIN_RAW', '2': 'VIN_F'}, '0451015.MRL', 'Littelfuse', 'Last-resort input fuse (only blows if a MOSFET fails short)', B)
 part('D1', 'SMBJ60CA', 'SMB', {'1': 'VIN_F', '2': 'GND'}, 'SMBJ60CA', 'Littelfuse', 'Bidirectional TVS: clamps fast spikes, silent up to 60 V DC either polarity (clamp 96.8 V < 100 V FETs)', B)
 part('R1', '1R', 'R1206', {'1': 'VIN_F', '2': 'SNUB'}, '', '', 'Snubber damping resistor (kills cable-LC ringing at hot-plug)', B)
@@ -199,7 +199,7 @@ part('R31', '12m 1% 2512 2W', 'R2512', {'1': 'VOUT_C', '2': 'OUTF'}, 'WSLP2512R0
 part('NT3', 'NetTie', 'NETTIE', {'1': 'ISP_K', '2': 'VOUT_C'}, '', '', 'Kelvin tap ISP at RIS pad 1', B)
 part('NT4', 'NetTie', 'NETTIE', {'1': 'ISN_K', '2': 'OUTF'}, '', '', 'Kelvin tap ISN at RIS pad 2', B)
 part('F2', '10A 65V', 'FUSE', {'1': 'OUTF', '2': 'OUTP'}, '0451010.MRL', 'Littelfuse', 'Last-resort output fuse (never blows in normal faults)', B)
-part('J2', 'VOUT', 'TERM', {'1': 'OUTP', '2': 'OUTN'}, 'WJ500V-5.08-2P', 'Kangnex', 'Output terminal 5.08 mm (pin 1 = +). OUT- is switched: never tie to VIN-', B)
+part('J2', 'VOUT', 'TERM', {'1': 'OUTN', '2': 'OUTP'}, 'WJ500V-5.08-2P', 'Kangnex', 'Output terminal 5.08 mm, wire entry at the board edge (+ / - on the silkscreen). OUT- is switched: never tie to VIN-', B)
 part('D15', 'PMEG10030ELP', 'SOD128', {'1': 'VOUT_C', '2': 'GND'}, 'PMEG10030ELPX', 'Nexperia', 'Clamp: VOUT_C never below ~-1 V (inductive-load freewheel, reversed-battery hit); low-leakage 100 V Schottky', B)
 part('Q7', 'CSD19532Q5B', 'SON5x6', {'1': 'GND', '2': 'GND', '3': 'GND', '4': 'QLSG', '5': 'OUTN'}, 'CSD19532Q5B', 'TI', 'Q_LS low-side output switch, 100 V: blocks reversed battery', B)
 part('R32', '10k', 'R1206', {'1': 'VIN_P', '2': 'VG'}, '', '', 'VG10 supply feed (1206: up to 33 V across)', B)

@@ -97,6 +97,8 @@ How it is done on this board:
 
 ## 8. Protection parts placement
 
+* The screw terminals sit at the board edges with their wire openings facing outwards: J1 (input) on the left
+  edge, J2 (output) on the right edge. Their square pad is the minus side; polarity is the + / − on the silkscreen.
 * The input protection (F1, D1, Q1, Q2, U2) sits right behind the input terminal J1, so a fault never
   reaches the converter.
 * The output reverse-battery switch Q7 sits in the OUT− return next to J2. Its trip circuit (Q8 to Q11) is
