@@ -19,6 +19,10 @@ output short and a reversed battery on the output. Every one of these only light
 | Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
 | PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
 
+| Top (power stage + parts) | Bottom (GND plane, mirrored) |
+|---|---|
+| ![PCB top](docs/img/pcb_top.png) | ![PCB bottom](docs/img/pcb_bottom.png) |
+
 > **Status / caveat:** the design is checked by calculation (`calc/design.py`: 53 checks, 52 pass, the one "fail" is the
 > "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks, by KiCad DRC and by an independent
 > review agent. **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,

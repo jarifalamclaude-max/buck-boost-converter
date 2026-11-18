@@ -128,10 +128,12 @@ je ekta "fail" seta info: heatsink chhara 80 W e board +57 °C gorom hoy — tai
 <h3>Output</h3>{bom_table('output')}
 <p class="small">Generic passive (LCSC code thakleo) — same size ar rating er jekono 1 % resistor / X7R-C0G capacitor cholbe. DNP = board e jayga ache, lagano hoy na.</p>
 """
-open(os.path.join(SRC, 'component_guide.html'), 'w').write(page('SafeBuck-80 Component Guide', comp))
+def write_component_guide():
+    open(os.path.join(SRC, 'component_guide.html'), 'w').write(page('SafeBuck-80 Component Guide', comp))
 
 # ====================================================================== build guide
-build = f"""
+def build_html():
+  return f"""
 <h1>SafeBuck-80 — Noob-friendly Build Guide</h1>
 <div class="sub">Kono experience chhara-i: file download → JLCPCB order → first power-up → CV/CC set → protection test.</div>
 <div class="card warn"><b>Safety:</b> eta 80 W power supply. 36 V porjonto DC safe, kintu short-circuit e cable gorom hoy, battery theke boro spark hoy.
@@ -206,9 +208,22 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 <h2>9. PCB</h2>
 <div class="two"><div>{img_tag('pcb_top.png')}<p class="small">Top (power + parts)</p></div><div>{img_tag('pcb_bottom.png')}<p class="small">Bottom (GND plane, mirrored)</p></div></div>
 """
-open(os.path.join(SRC, 'build_guide.html'), 'w').write(page('SafeBuck-80 Build Guide', build))
+def write_build_guide():
+    open(os.path.join(SRC, 'build_guide.html'), 'w').write(page('SafeBuck-80 Build Guide', build_html()))
+
+def render_pcb():
+    """top / bottom copper + silkscreen renders of the routed board for the build guide"""
+    os.makedirs(IMG, exist_ok=True)
+    pcb = os.path.join(ROOT, 'hardware', 'kicad', 'SafeBuck-80.kicad_pcb')
+    for name, layers, extra in (('pcb_top', 'F.Cu,F.Silkscreen,F.Mask,Edge.Cuts', []), ('pcb_bottom', 'B.Cu,B.Silkscreen,Edge.Cuts', ['--mirror'])):
+        svg = os.path.join(IMG, name + '.svg')
+        subprocess.run(['kicad-cli', 'pcb', 'export', 'svg', '--layers', layers, '--page-size-mode', '2', '--exclude-drawing-sheet'] + extra + ['-o', svg, pcb], check=True, capture_output=True)
+        subprocess.run(['node', os.path.join(DOCS, 'svg2png.js'), svg, os.path.join(IMG, name + '.png'), '1400'], check=True)
+        os.remove(svg)
+
 
 if __name__ == '__main__':
+    render_pcb(); write_component_guide(); write_build_guide()
     sch = os.path.join(ROOT, 'hardware', 'kicad', 'SafeBuck-80.kicad_sch')
     subprocess.run(['kicad-cli', 'sch', 'export', 'pdf', '-o', os.path.join(DOCS, 'SafeBuck-80_Schematic.pdf'), sch], check=True)
     subprocess.run(['node', os.path.join(DOCS, 'print_pdf.js'),
