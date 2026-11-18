@@ -11,11 +11,11 @@ output short and a reversed battery on the output. Every one of these only light
 
 | | |
 |---|---|
-| Input | 9–36 V (works down to 8.3 V rising / 7.6 V falling), survives −60 V reversed and up to +58 V DC (cut-off above 41 V) |
-| Output | 1.5–36 V (CV, 25-turn pot) and 0.94–8.33 A (CC, 25-turn pot), max 80 W |
+| Input | 9–36 V (works down to 8.3 V rising / 7.6 V falling), survives −60 V reversed and up to +60 V DC (cut-off above ~43 V, back on below ~39 V) |
+| Output | 1.6–36 V (CV, 25-turn pot; the pot reaches ~39 V) and 0.94–8.33 A (CC, 25-turn pot), max 80 W |
 | Topology | 4-switch synchronous buck-boost, 300 kHz ±15 % spread spectrum, peak-current mode |
 | Efficiency (calculated) | 96.2–96.9 % (24 → 14.4 V, 80 W) · 93.4–94.8 % (9 → 35 V, 80 W) · 94.7–95.5 % (12 → 12 V) |
-| Protection | reverse input to −60 V, OV cut-off 41 V, UV 7.6 V, inrush limit, output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–3 µs), thermal foldback (PTC), last-resort fuses on both sides |
+| Protection | reverse input to −60 V, OV cut-off ~43 V, UV 7.6 V, inrush limit, input short while running (Q1 gate clamp), output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–6 µs), battery above the CV setting (FB clamp), inductive loads (VOUT clamp diode), thermal foldback (PTC), last-resort fuses on both sides |
 | Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
 | PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
 
@@ -23,9 +23,9 @@ output short and a reversed battery on the output. Every one of these only light
 |---|---|
 | ![PCB top](docs/img/pcb_top.png) | ![PCB bottom](docs/img/pcb_bottom.png) |
 
-> **Status / caveat:** the design is checked by calculation (`calc/design.py`: 53 checks, 52 pass, the one "fail" is the
-> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks, by KiCad DRC and by an independent
-> review agent. **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,
+> **Status / caveat:** the design is checked by calculation (`calc/design.py`: 57 checks, 56 pass, the one "fail" is the
+> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks (`hardware/verify.py`), by KiCad DRC and by
+> two rounds of independent review (the second round's 8 major findings are fixed or listed under Limitations). **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,
 > and check the loop compensation with a load step before trusting it at 80 W.
 
 ---
@@ -92,17 +92,22 @@ J1 VIN+ ─ F1 15A ─┬─ D1 TVS        ┌──────── LT8390 4-
 | Wrong connection | What protects | Result |
 |---|---|---|
 | Input reversed (up to −60 V) | LM74930 + Q2 block, D1 is bidirectional | red IN LED, no current, nothing hot |
-| Input 41–58 V DC | LM74930 OV opens Q1 (back on below 37.6 V) | red IN LED, output off |
+| Input 43–60 V DC | LM74930 OV opens Q1 (back on below 39.4 V; worst case ≥ 37.4 V, so a 36 V supply always restarts) | red IN LED, output off |
+| Input shorted while running | D17 (15 V zener) clamps Q1's gate-source; Q2 blocks reverse current | output off, no damage |
 | Input spike (hot-plug, cable inductance) | D1 SMBJ58CA, R1/C1 snubber, C11 ESR damping | clamped |
 | Input below 7.6 V | LM74930 UV + LT8390 EN/UVLO | output off, red IN LED |
 | Output short circuit | LT8390 CC limit (keep-running) + 62.5 A instant ISOC | runs at the CC current, recovers when the short is removed |
-| Battery reversed on the output (≤ 35 V), any CV setting | Q9 (current > 83 A) or Q11 (OUT+ < −1.25 V) turns Q7 off within 1–3 µs, Q10 holds it off | red OUT LED, peak 47–184 A for < 3 µs, Q7 avalanche ≤ 19 mJ (rated 274 mJ) |
+| Battery reversed on the output (≤ 35 V), any CV setting | Q9 (current > 83 A) or Q11 (OUT+ < −1.85 V) turns Q7 off within 1–6 µs, Q10 holds it off; D15 keeps VOUT_C above about −1.5 V | red OUT LED, peak 52–184 A for a few µs, Q7 avalanche ≤ 19 mJ (rated 274 mJ) |
+| Battery (correct polarity) above the CV setting, e.g. 36 V battery at CV 1.6 V | R46 + D14 hold the FB pin below 5.4 V (6 V abs max); LT8390 stops switching (FB over-voltage) | no damage; the battery is not discharged when VIN is off |
+| Inductive load (motor, solenoid) when the converter stops | D15 Schottky takes the freewheel current (OUT+ ≈ −1 V, Q11 trips only below −1.85 V) | no false trip, no avalanche |
 | Battery on the output, correct polarity, input off | Q7 off without VIN | no drain (µA) |
 | Overheating | PTC TH1 pulls CTRL down | current folds back at about 105 °C, stops at about 130 °C, auto-restarts |
 | A MOSFET fails short | F1 / F2 | fuse opens (last resort only) |
 
-Never connect OUT− to VIN− outside the board. OUT− is switched by Q7: the converter still works if you do,
-but the reversed-battery protection on the output is lost.
+**Never connect OUT− to VIN− outside the board (no common ground).** OUT− is switched by Q7. With a common ground the
+converter still works, but (1) a battery reversed on the output is no longer blocked (F2 has to blow), and (2) if the
+input is then also reversed, the supply is shorted through Q7's body diode. Use a floating load / separate supply,
+which is how a bench "smoke tester" is normally wired.
 
 ## KiCad libraries used
 
@@ -154,4 +159,18 @@ but the reversed-battery protection on the output is lost.
   placement preview.
 - **80 W needs a heatsink** (40 × 40 mm under the board). The bare board reaches about +57 °C above ambient at the worst
   operating point.
-- The reversed-battery protection assumes a battery of 35 V or less (Q7 blocks VOUT + battery, up to 70 V).
+- The reversed-battery protection assumes a battery of 35 V or less (Q7 blocks VOUT + battery, up to about 75 V).
+- **No input power limit.** The CC limit (up to 8.33 A) and the inductor peak limit allow more than 80 W at high output voltage
+  (for example 36 V × 8 A). Set the CC pot so that VOUT × ICC ≤ 80 W. If you overload it anyway, the PTC folds the current
+  back at about 105 °C and F1 (15 A) is the last resort.
+- **Common ground** between input and output defeats the output reverse protection (see the warning above).
+- In the highest-voltage reversed-battery cases (for example a 35 V battery at CV 35 V) Q7 turns off at up to ~180 A, above
+  the 74 A that TI's avalanche graph is drawn to. The energy is small (≤ 19 mJ of a 274 mJ rating) and lasts < 2 µs, but it
+  is outside the tested area of the datasheet.
+- The LM74930 allows at most 85 V between its C and A pins. If the input is reversed to −60 V within seconds of running at
+  more than about 26 V (input caps still charged), that limit is exceeded. Wait a few seconds, or keep the reverse voltage
+  at or below −48 V.
+- The NANO² fuses (F1, F2) break at most 50 A. They are a last resort against a failed MOSFET, not against a battery
+  short.
+- C18 carries about 2.2 A rms at the 9 V → 35 V, 80 W corner (rated 1.8 A at 105 °C, about 2.5 A at 85 °C). For long use at
+  that corner, keep the board cool or stay at or below 65 W.

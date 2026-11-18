@@ -53,7 +53,7 @@ eff_rows = ''.join(f"<tr><td>{h['vin']} V</td><td>{h['vout']} V</td><td>{h['iout
 # ====================================================================== component guide
 comp = f"""
 <h1>SafeBuck-80 — Kon component, keno</h1>
-<div class="sub">80 W protected 4-switch buck-boost · 9–36 V in · 1.5–36 V / 0.9–8.3 A out (CV + CC) · 65 × 48 mm · 2-layer 2 oz</div>
+<div class="sub">80 W protected 4-switch buck-boost · 9–36 V in · 1.6–36 V / 0.9–8.3 A out (CV + CC) · 65 × 48 mm · 2-layer 2 oz</div>
 
 <h2>1. Puro circuit ta ek nojore</h2>
 <p><b>VIN (J1)</b> → F1 fuse → D1 TVS → <b>LM74930 + Q1/Q2</b> (ulta polarity block, over/under-voltage cut-off)
@@ -62,7 +62,7 @@ comp = f"""
 ar <b>red OUT LED</b> jole. Input ulta dile <b>red IN LED</b> jole, kichu gorom hoy na.</p>
 <div class="card"><b>Keno 4-switch buck-boost?</b> QS-1212CCBD te UC3843 (non-synchronous, diode diye) — diode e 0.5 V drop, 80 W e
 onek gorom. LT8390 te 4-ta MOSFET synchronous switch kore, tai efficiency 93–97 % (hisab nicher table e), ar input 9 V hok ba 36 V,
-output jekono voltage (1.5–36 V) smooth bhabe dey — buck, boost ar buck-boost mode nije nije bodlay.</div>
+output jekono voltage (1.6–36 V) smooth bhabe dey — buck, boost ar buck-boost mode nije nije bodlay.</div>
 
 <h2>2. Main IC</h2>
 <div class="card"><h3>U1 — LT8390 (Analog Devices) · LCSC C673802</h3>
@@ -70,11 +70,13 @@ output jekono voltage (1.5–36 V) smooth bhabe dey — buck, boost ar buck-boos
 <li><b>CV + CC dutoi ek IC te:</b> FB pin (1.00 V) diye voltage, CTRL pin diye output current limit (RV2 pot). Eta-i "CC/CV module" er kaj.</li>
 <li>±15 % <b>spread spectrum</b> (SYNC/SPRD → INTVCC): EMI peak kome.</li>
 <li>ISP/ISN e 0.75 V hole (62.5 A) sathe sathe switching bondho — output short e MOSFET bache. SS → VREF 100 k = "keep-running" mode: short hole CC te current limit kore chalte thake, latch kore na.</li>
-<li>Abs max 60 V: tai input e 41 V er upore LM74930 cut-off kore dey.</li></ul></div>
+<li>Abs max 60 V: tai input e ~43 V er upore LM74930 cut-off kore dey.</li>
+<li>FB pin abs max 6 V: R46 (10 k) + D14 (5.1 V zener) pin take rokkha kore — output e CV er cheye onek beshi voltage er battery lagaleo.</li></ul></div>
 <div class="card"><h3>U2 — LM74930-Q1 (Texas Instruments) · LCSC C22428070</h3>
 <ul><li>Ideal-diode + load-switch controller, −65 V porjonto ulta voltage sojjo kore. Q2 (DGATE) ulta polarity block kore, Q1 (HGATE) over-voltage/under-voltage e line kete dey.</li>
 <li>UV/OV ladder (R5 280k, R6 17.4k, R7 4.42k): <b>UV {fe.get('uv_fall', 7.6):.1f} V (falling) / {fe.get('uv_rise', 8.3):.1f} V (rising), OV {fe.get('ov_rise', 41.0):.1f} V cut-off, {fe.get('ov_fall', 37.6):.1f} V e abar on</b>.</li>
 <li>CdVdT (C5 3.3 nF + R4 100 Ω) inrush ke ~1.3–2.6 A te rakhe — hot-plug e spark/fuse problem nai.</li>
+<li>D17 (15 V zener, TI er DZ1): chalu obosthay input short hole C5 Q1 er gate ke upore dhore rakhe — zener VGS 15 V er niche rakhe (Q1 limit 20 V).</li>
 <li>FLT pin → red IN LED. Built-in circuit breaker disable kora (TMR, ILIM → GND; CS+/CS−/ISCP → C): F1 fuse shudhu MOSFET short hole last resort.</li>
 <li>MODE → VS, OVCLAMP → GND, NC pin float, exposed pad (RTN) float — datasheet onujayi.</li></ul></div>
 
@@ -85,7 +87,8 @@ INTVCC regulator e loss kom (~0.6–1 W @36 V). 60 V rating, OV cut-off 41 V er 
 (CSD18540Q5B ar o bhalo, kintu JLCPCB te stock e 2-ta — tai eta.)</div>
 <div class="card"><h3>Q1, Q2, Q7 — CSD19532Q5B ×3 (TI, 100 V) · LCSC C473333</h3>
 Input protection (Q1/Q2) ar output reverse-battery switch (Q7). Q7 ke output voltage + ulta battery = ~70 V porjonto block korte hoy, tai 100 V.
-4.9 mΩ (@10 V) — 8 A te mattro ~0.3 W. Avalanche rating 274 mJ: fault e wiring inductance er energy (hisab: 0.5–19 mJ) easily sojjo kore.</div>
+4.9 mΩ (@10 V) — 8 A te mattro ~0.3 W. Avalanche rating 274 mJ: fault e wiring inductance er energy (hisab: 0.6–19 mJ) easily sojjo kore.</div>
+<div class="card"><h3>D15 — PMEG10030ELP (Nexperia 100 V 3 A Schottky) · LCSC C5260346</h3>GND theke VOUT_C (anode GND). Motor/solenoid er moto inductive load hole converter bondho howar muhurte coil er current eta diye ghore — VOUT_C ~−1 V e thake, tai Q11 false trip kore na ar Q7 e avalanche hoy na. Ulta battery hit eo VOUT_C ke ~−1.5 V er niche jete dey na (LT8390 er VOUT/ISP/ISN pin bache). Low-leakage (450 nA @100 V) bole normal e loss nai.</div>
 <div class="card"><h3>L1 — Coilcraft XAL1510-103 (10 µH) · LCSC C3911782</h3>
 10 µH keno: slope-compensation er jonno L &gt; 10·VOUT·RSENSE/f = 3.6 µH lagbe, ar ripple current ~30–40 % e rakhte 10 µH thik.
 Isat 26.3 A (soft saturation) &gt; peak current limit max 21.7 A. DCR 9 mΩ max (kom loss), shielded (EMI kom), AEC-Q200.</div>
@@ -96,21 +99,24 @@ R15: LT8390 er inductor peak-current sense — limit 11.7–21.7 A (datasheet th
 <ul><li><b>C7, C8 (2×10 µF 100 V X7S 1210):</b> hot loop 1 er input cap, MOSFET er thik niche. 100 V rating keno: ceramic e DC-bias e capacitance kome —
 36 V e 100 V cap ~45 % thake, 50 V cap hole ~20 % thakto.</li>
 <li><b>C11 (100 µF 63 V electrolytic):</b> ESR ~0.35 Ω — input cable er inductance + ceramic cap er LC resonance damp kore (Middlebrook). Hot-plug e voltage spike kome.</li>
-<li><b>C12–C14 (3×10 µF 100 V) + C18 (47 µF 50 V hybrid polymer):</b> output ripple (worst ~150 mV @9→24 V) ar load step.</li>
+<li><b>C12–C14, C36 (4×10 µF 100 V) + C18 (47 µF 50 V hybrid polymer, Panasonic ZA):</b> output ripple ar load step. 300 kHz e ceramic er reactance kom na — tai hybrid o ripple current bhag kore (~2.2 A worst corner e, 85 °C e rating ~2.5 A).</li>
 <li>C19/C20/C21/C22/C23: IC pin er bypass — protitar pin er 2–5 mm er moddhe.</li></ul></div>
 <div class="card"><h3>F1 15 A, F2 10 A (Littelfuse 451 NANO²)</h3>
 Normal fault (ulta, short, over-voltage) e fuse kete na — electronics-i protect kore. Fuse shudhu kono MOSFET nijei short hoye gele aagun thekate.</div>
-<div class="card"><h3>D1 — SMBJ58CA (bidirectional TVS)</h3>
-Bidirectional bole −60 V ulta input eo conduct kore na (LM74930 block korbe), kintu cable er fast spike (hot-plug, inductive kick) clamp kore. 58 V standoff.</div>
+<div class="card"><h3>D1 — SMBJ60CA (bidirectional TVS)</h3>
+Bidirectional bole −60 V ulta input eo conduct kore na (LM74930 block korbe), kintu cable er fast spike (hot-plug, inductive kick) clamp kore. 60 V standoff, clamp 96.8 V (&lt; 100 V of Q1/Q2).</div>
 
 <h2>4. "Smoke-tester" protection er chhoto part gulo</h2>
 <table><tr><th>Part</th><th>Ki kore</th></tr>
 <tr><td>Q7 + R32/D10/C32/R33</td><td>VG10 supply (input theke 10 V zener) diye Q7 er gate on rakhe. Input na thakle Q7 off — output e battery lagale drain hoy na.</td></tr>
 <tr><td>Q9 (Q_P) + R36/R37/R38</td><td>R31 e ~1.0 V (≈83 A) dekhlei Q7 off (output e ulta battery, high CV setting e).</td></tr>
-<tr><td>Q11 (Q_N) + D13/R44</td><td>OUT+ GND er cheye ~1.25 V niche gelei Q7 off (ulta battery, kom CV setting e — review agent er dhora bug er fix).</td></tr>
+<tr><td>Q11 (Q_N) + D13/D16/R44/R47</td><td>OUT+ GND er cheye ~1.85 V niche gelei Q7 off (ulta battery, kom CV setting e — review agent er dhora bug er fix). Duita diode (D13, D16) threshold baray jate inductive load er freewheel (−1 V) e trip na kore; R47 diode leakage theke Q11 er E-B junction bachay.</td></tr>
 <tr><td>Q10 (Q_R) + D11/R39–R42</td><td>Q7 off howar por, battery ulta thakle oi battery-r power diyei Q7 ke off dhore rakhe.</td></tr>
 <tr><td>Q8 + R34/R35</td><td>Jekono trip signal (TRIP) e Q7 er gate GND e tene dey (~100 mA, &lt;1 µs).</td></tr>
-<tr><td>R45 + C20</td><td>LT8390 VOUT pin e 10 µs RC filter — ulta battery hit e pin −0.3 V er niche jay na.</td></tr>
+<tr><td>R45 + C20</td><td>LT8390 VOUT pin e 100 Ω / 1 µF filter — ulta battery hit e pin positive thake, ar VOUT_C negative holeo pin e &lt; 4 mA.</td></tr>
+<tr><td>R46 + D14</td><td>FB pin er series 10 k + 5.1 V zener: output e CV er 6× er beshi voltage er battery lagaleo FB &lt; 6 V.</td></tr>
+<tr><td>D15</td><td>VOUT_C clamp Schottky (upore dekhun).</td></tr>
+<tr><td>D17</td><td>Q1 gate-source 15 V clamp (input short while running).</td></tr>
 <tr><td>R28/R29 + D8/D9</td><td>ISP/ISN pin er ±1 V abs max rokkha kore.</td></tr>
 <tr><td>TH1 (PTC 470 Ω)</td><td>Board 105 °C hole CC current kome (foldback), ~130 °C e switching bondho; thanda hole abar chalu.</td></tr>
 <tr><td>LED2 / D4–D7 / R11/R12</td><td>Red IN: FLT (OV/UV) ba input ulta hole jole.</td></tr>
@@ -119,7 +125,7 @@ Bidirectional bole −60 V ulta input eo conduct kore na (LM74930 block korbe), 
 
 <h2>5. Hisab (calc/design.py theke)</h2>
 <table><tr><th>VIN</th><th>VOUT</th><th>IOUT</th><th>Mode</th><th>Efficiency (est.)</th></tr>{eff_rows}</table>
-<p class="small">Efficiency duita estimate: conservative physics model – datasheet-formula model. Real board e ±2 % hote pare. 53-ta design check er 52-ta pass;
+<p class="small">Efficiency duita estimate: conservative physics model – datasheet-formula model. Real board e ±2 % hote pare. 57-ta design check er 56-ta pass;
 je ekta "fail" seta info: heatsink chhara 80 W e board +57 °C gorom hoy — tai 40×40 mm heatsink lagbe (tokhon +27 °C).</p>
 
 <h2 class="pb">6. Full BOM</h2>
@@ -171,21 +177,22 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 
 <h2>4. First power-up (smoke test, step by step)</h2>
 <ol>
-<li>RV1 (CV) <b>counter-clockwise 25 paak</b> ghurie minimum e rakhun (output ~1.5 V). RV2 (CC) majhamajhi.</li>
+<li>RV1 (CV) <b>counter-clockwise 25 paak</b> ghurie minimum e rakhun (output ~1.6 V). RV2 (CC) majhamajhi.</li>
 <li>Bench supply: <b>12 V, current limit 0.2 A</b>. J1 er + ar − (silkscreen dekhun) e lagan, J2 te kichu na.</li>
 <li>Expected: <b>green LED jolbe</b>, red LED gulo bondho, input current ~20–40 mA. Kichu gorom hobe na.</li>
-<li>J2 te multimeter: ~1.5 V. RV1 clockwise ghuran → voltage barbe (25 paak e full range 1.5–36 V). (Kono kono 3296 pot e direction ulta — meter dekhe bujhun.)</li>
+<li>J2 te multimeter: ~1.6 V. RV1 clockwise ghuran → voltage barbe (25 paak e full range ~1.6–39 V; 36 V er beshi set korben na). (Kono kono 3296 pot e direction ulta — meter dekhe bujhun.)</li>
 <li>12 V set kore load (bulb) lagan, supply current limit 3 A koren. Bulb jolbe, voltage thik thakbe.</li>
 <li><b>CC set:</b> load khule, J2 te multimeter (10 A range) direct lagan (short) → current dekhaben → RV2 ghurie jei current limit chan set korun (0.9–8.3 A).</li></ol>
 
 <h2>5. Protection test (ichhe kore vhul connection)</h2>
 <table><tr><th>Test (supply current limit 1 A rakhun)</th><th>Expected</th></tr>
 <tr><td>Input + ar − ulta (12 V)</td><td>Red IN LED jolbe, output 0, kichu gorom na. Thik kore lagale abar chalu.</td></tr>
-<tr><td>Input 7 V (UV) / 42 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 37.6 V er niche abar chalu.</td></tr>
+<tr><td>Input 7 V (UV) / 45 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 39 V er niche abar chalu.</td></tr>
 <tr><td>Output short (J2 + ar − jor)</td><td>CC limit e current, green LED on, board halka gorom. Short khulle abar normal.</td></tr>
 <tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–3 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
 <tr><td>Output e battery thik polarity te, input bondho</td><td>Battery drain hoy na (Q7 off), shudhu µA leakage.</td></tr></table>
-<div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na.</b> OUT− Q7 diye switch kora — jorle converter cholbe, kintu output reverse-battery protection ar kaj korbe na.</div>
+<div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na (common ground na).</b> OUT− Q7 diye switch kora. Jorle converter cholbe, kintu (1) output e ulta battery ar block hobe na (F2 kete jabe), (2) tokhon input o ulta dile supply Q7 er body diode diye short hobe. Load ar supply alada (floating) rakhun — bench smoke-tester e emnitei thake.</div>
+<div class="card warn"><b>Power limit:</b> CC pot emon bhabe set korun jate VOUT × ICC ≤ 80 W (jemon 36 V e ≤ 2.2 A). Beshi load dile board gorom hobe, PTC ~105 °C e current komabe; F1 (15 A) shudhu last resort.</div>
 
 <h2>6. Full power (80 W)</h2>
 <ul><li>Board er niche heatsink: thermal pad diye MOSFET/U1 area er bottom side heatsink e chepe lagan, M3 nylon spacer.</li>
@@ -195,7 +202,7 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 
 <h2>7. LED er mane</h2>
 <table><tr><th>LED</th><th>Mane</th></tr><tr><td>Green (LED1)</td><td>Controller er power (INTVCC 5 V) ache.</td></tr>
-<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; 41 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
+<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; ~43 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
 
 <h2>8. Troubleshooting</h2>
 <table><tr><th>Problem</th><th>Check</th></tr>

@@ -20,6 +20,7 @@ Pad conventions used here (checked against the KiCad 7 footprints):
 """
 
 FP = dict(
+    R0402='Resistor_SMD:R_0402_1005Metric',
     R0603='Resistor_SMD:R_0603_1608Metric',
     R0805='Resistor_SMD:R_0805_2012Metric',
     R1206='Resistor_SMD:R_1206_3216Metric',
@@ -34,6 +35,8 @@ FP = dict(
     SOT23='Package_TO_SOT_SMD:SOT-23',
     SOD123='Diode_SMD:D_SOD-123',
     SOD323='Diode_SMD:D_SOD-323',
+    SOD523='Diode_SMD:D_SOD-523',
+    SOD128='Diode_SMD:D_SOD-128',
     SMB='Diode_SMD:D_SMB',
     LED0805='LED_SMD:LED_0805_2012Metric',
     FUSE='Fuse:Fuse_Littelfuse-NANO2-451_453',
@@ -55,9 +58,9 @@ LCSC = {
     'Q1': 'C473333', 'Q2': 'C473333', 'Q7': 'C473333',
     'Q3': 'C882766', 'Q4': 'C882766', 'Q5': 'C882766', 'Q6': 'C882766',
     'L1': 'C3911782', 'R15': 'C723728', 'R31': 'C19633815',
-    'F1': 'C44480', 'F2': 'C44479', 'D1': 'C151267',
-    'C7': 'C576517', 'C8': 'C576517', 'C12': 'C576517', 'C13': 'C576517', 'C14': 'C576517',
-    'C11': 'C128460', 'C18': 'C454346',
+    'F1': 'C44480', 'F2': 'C44479', 'D1': 'C115824',
+    'C7': 'C576517', 'C8': 'C576517', 'C12': 'C576517', 'C13': 'C576517', 'C14': 'C576517', 'C36': 'C576517',
+    'C11': 'C128460', 'C18': 'C454653',
     # small semiconductors
     'D2': 'C79596', 'D4': 'C79596', 'D5': 'C79596', 'D6': 'C79596', 'D7': 'C79596', 'D12': 'C2128', 'D13': 'C2128',
     'D3': 'C238878', 'D10': 'C82476', 'D11': 'C2128', 'D8': 'C2128', 'D9': 'C2128',
@@ -66,16 +69,17 @@ LCSC = {
     'TH1': 'C152572', 'RV1': 'C58354', 'RV2': 'C83686', 'J1': 'C8465', 'J2': 'C8465',
     # capacitors
     'C1': 'C55151', 'C2': 'C15725', 'C3': 'C105952', 'C19': 'C105952', 'C20': 'C105952', 'C35': 'C105952',
-    'C4': 'C21120', 'C28': 'C21120', 'C5': 'C113805', 'C21': 'C15850',
+    'C4': 'C64705', 'C28': 'C21120', 'C5': 'C113805', 'C21': 'C95841',
     'C22': 'C29936', 'C24': 'C29936', 'C25': 'C29936', 'C23': 'C1623', 'C29': 'C21122',
     'C30': 'C14858', 'C32': 'C14663', 'C33': 'C1671', 'C34': 'C57112',
     # resistors
-    'R1': 'C17928', 'R3': 'C17513', 'R4': 'C22775', 'R5': 'C17597', 'R6': 'C22819', 'R7': 'C23043',
+    'R1': 'C17928', 'R3': 'C17513', 'R4': 'C22775', 'R5': 'C17597', 'R6': 'C22821', 'R7': 'C23042',
     'R11': 'C18028', 'R12': 'C18028', 'R16': 'C21189', 'R17': 'C21189', 'R20': 'C22875', 'R21': 'C25803',
-    'R22': 'C25804', 'R23': 'C17539', 'R24': 'C23059', 'R25': 'C23188', 'R26': 'C4184', 'R27': 'C25971',
+    'R22': 'C25804', 'R23': 'C17539', 'R24': 'C23059', 'R25': 'C23068', 'R26': 'C4184', 'R27': 'C25971',
     'R28': 'C22859', 'R29': 'C22859', 'R30': 'C4190', 'R32': 'C17902', 'R33': 'C25804', 'R34': 'C23162',
     'R35': 'C25819', 'R36': 'C23212', 'R37': 'C25971', 'R38': 'C25804', 'R39': 'C25804', 'R40': 'C25803',
-    'R41': 'C31850', 'R42': 'C25804', 'R43': 'C17902', 'R44': 'C21190', 'R45': 'C22859',
+    'R41': 'C31850', 'R42': 'C25804', 'R43': 'C17902', 'R44': 'C21190', 'R45': 'C22775', 'R46': 'C25804', 'R47': 'C25741',
+    'D14': 'C75074', 'D15': 'C5260346', 'D16': 'C27748', 'D17': 'C603316',
 }
 
 import uuid
@@ -94,7 +98,7 @@ def part(ref, value, fp, pins, mpn='', mfr='', role='', block='', dnp=False, lcs
 B = 'input'
 part('J1', 'VIN 9-36V', 'TERM', {'1': 'VIN_RAW', '2': 'GND'}, 'WJ500V-5.08-2P', 'Kangnex', 'Input screw terminal 5.08 mm, 18 A (pin 1 = +)', B)
 part('F1', '15A 65V', 'FUSE', {'1': 'VIN_RAW', '2': 'VIN_F'}, '0451015.MRL', 'Littelfuse', 'Last-resort input fuse (only blows if a MOSFET fails short)', B)
-part('D1', 'SMBJ58CA', 'SMB', {'1': 'VIN_F', '2': 'GND'}, 'SMBJ58CA', 'Littelfuse', 'Bidirectional TVS: clamps fast spikes, silent up to 58 V DC either polarity', B)
+part('D1', 'SMBJ60CA', 'SMB', {'1': 'VIN_F', '2': 'GND'}, 'SMBJ60CA', 'Littelfuse', 'Bidirectional TVS: clamps fast spikes, silent up to 60 V DC either polarity (clamp 96.8 V < 100 V FETs)', B)
 part('R1', '1R', 'R1206', {'1': 'VIN_F', '2': 'SNUB'}, '', '', 'Snubber damping resistor (kills cable-LC ringing at hot-plug)', B)
 part('C1', '2.2uF 100V X7R', 'C1210', {'1': 'SNUB', '2': 'GND'}, '', '', 'Snubber capacitor', B)
 part('C2', '100nF 100V X7R', 'C0603', {'1': 'VIN_F', '2': 'GND'}, '', '', 'LM74930 input bypass (datasheet min 0.1 uF)', B)
@@ -112,13 +116,14 @@ part('D2', 'BAS21', 'SOT23', {'1': 'VIN_F', '3': 'VSD'}, 'BAS21', '', 'Feeds VS;
 part('R3', '1k', 'R0805', {'1': 'VSD', '2': 'VS'}, '', '', 'Limits clamp current into D3 during spikes', B)
 part('D3', 'BZX84C62', 'SOT23', {'1': 'GND', '3': 'VS'}, 'BZX84C62', '', 'Clamps VS below 70 V abs max', B)
 part('C3', '1uF 100V X7R', 'C0805', {'1': 'VS', '2': 'GND'}, '', '', 'VS bypass (datasheet min 1 uF)', B)
-part('C4', '220nF 25V X7R', 'C0603', {'1': 'CAP', '2': 'VS'}, '', '', 'Charge-pump capacitor (>=10x Ciss of Q1+Q2)', B)
+part('C4', '220nF 50V X7R', 'C0603', {'1': 'CAP', '2': 'VS'}, '', '', 'Charge-pump capacitor (>=10x Ciss of Q1+Q2), 50 V = >2x the 14 V across it', B)
 part('R4', '100R', 'R0603', {'1': 'HGATE', '2': 'CDV'}, '', '', 'RG in series with CdVdT (keeps turn-off fast)', B)
 part('C5', '3.3nF 100V X7R', 'C0603', {'1': 'CDV', '2': 'GND'}, '', '', 'CdVdT: inrush 1.3-2.6 A, 1.6 ms ramp', B)
+part('D17', 'MM3Z15V', 'SOD323', {'1': 'HGATE', '2': 'CSRC'}, 'MM3Z15VT1G', 'onsemi', 'DZ1 (TI Fig. 8-1): clamps Q1 VGS to 15 V when the input is shorted while running (C5 would hold the gate up)', B)
 part('C35', '1uF 100V X7R', 'C0805', {'1': 'CSRC', '2': 'GND'}, '', '', 'CCS: common-source node capacitor (TI LM74930 Fig. 8-1)', B)
 part('R5', '280k 1%', 'R0805', {'1': 'VIN_F', '2': 'UVLO'}, '', '', 'UV/OV ladder top (0805 for 60 V)', B)
-part('R6', '17.4k 1%', 'R0603', {'1': 'UVLO', '2': 'OV'}, '', '', 'UV/OV ladder middle', B)
-part('R7', '4.42k 1%', 'R0603', {'1': 'OV', '2': 'GND'}, '', '', 'UV/OV ladder bottom', B)
+part('R6', '17.8k 1%', 'R0603', {'1': 'UVLO', '2': 'OV'}, '', '', 'UV/OV ladder middle', B)
+part('R7', '4.22k 1%', 'R0603', {'1': 'OV', '2': 'GND'}, '', '', 'UV/OV ladder bottom: OV trip 42.9 V, release 39.4 V (a 36 V supply always restarts)', B)
 # RED "IN" LED: lights on FLT (OV / UV / breaker) or when the input is reversed
 part('D4', 'BAS21', 'SOT23', {'1': 'VIN_F', '3': 'A1'}, 'BAS21', '', 'RED IN: FLT path feed from input (blocks when reversed)', B)
 part('R11', '5.6k', 'R1206', {'1': 'A1', '2': 'RIN2'}, '', '', 'RED IN current limit, shared by both paths (1206 for 60 V)', B)
@@ -149,13 +154,13 @@ part('L1', '10uH 26A', 'IND', {'1': 'SWL', '2': 'SW2'}, 'XAL1510-103MED', 'Coilc
 for i, ref in enumerate(['C7', 'C8']):
     part(ref, '10uF 100V X7S', 'C1210', {'1': 'VIN_P', '2': 'GND'}, 'GRM32EC72A106KE05L', 'Murata', 'CIN ceramic (hot loop 1) — bridges Q3 drain and Q4 source directly', B)
 part('C11', '100uF 63V', 'CP10', {'1': 'VIN_P', '2': 'GND'}, 'EEE-FK1J101P', 'Panasonic', 'CIN bulk: ESR 0.35 ohm damps cable LC (Middlebrook)', B)
-for ref in ['C12', 'C13', 'C14']:
+for ref in ['C12', 'C13', 'C14', 'C36']:
     part(ref, '10uF 100V X7S', 'C1210', {'1': 'VOUT_C', '2': 'GND'}, 'GRM32EC72A106KE05L', 'Murata', 'COUT ceramic (hot loop 2) — bridges Q6 drain and Q5 source directly', B)
-part('C18', '47uF 50V hybrid', 'CP8', {'1': 'VOUT_C', '2': 'GND'}, 'EEHZC1H470P', 'Panasonic', 'COUT bulk hybrid polymer 8x10, ESR 30 mOhm, 1.25 A ripple, 125 C', B)
+part('C18', '47uF 50V hybrid', 'CP8', {'1': 'VOUT_C', '2': 'GND'}, 'EEHZA1H470P', 'Panasonic', 'COUT bulk hybrid polymer 8x10, ESR 30 mOhm, 1.8 A ripple @105 C, 10,000 h', B)
 part('C19', '1uF 100V X7R', 'C0805', {'1': 'VIN_P', '2': 'GND'}, '', '', 'LT8390 VIN pin bypass (close to pin 7)', B)
-part('R45', '10R', 'R0603', {'1': 'VOUT_C', '2': 'VOUT_U1'}, '', '', 'VOUT pin RC filter: keeps pin 24 above -0.3 V during a reversed-battery hit (pin is sense-only, <60 uA)', B)
+part('R45', '100R', 'R0603', {'1': 'VOUT_C', '2': 'VOUT_U1'}, '', '', 'VOUT pin RC filter + current limit: <4 mA into pin 24 even if VOUT_C goes negative (pin draws <60 uA)', B)
 part('C20', '1uF 100V X7R', 'C0805', {'1': 'VOUT_U1', '2': 'GND'}, '', '', 'LT8390 VOUT pin bypass / RC filter (tau 10 us)', B)
-part('C21', '10uF 25V X5R', 'C0805', {'1': 'INTVCC', '2': 'GND'}, '', '', 'INTVCC (datasheet min 4.7 uF; 10 uF keeps >4.7 uF after DC-bias derating)', B)
+part('C21', '10uF 16V X7R', 'C0805', {'1': 'INTVCC', '2': 'GND'}, '', '', 'INTVCC (datasheet min 4.7 uF; 10 uF X7R keeps >4.7 uF at 5 V and works to 125 C)', B)
 part('C22', '1uF 16V X7R', 'C0603', {'1': 'INTVCC', '2': 'GND'}, '', '', 'Extra INTVCC decoupling at the pin', B)
 part('C23', '470nF 16V X7R', 'C0603', {'1': 'VREF', '2': 'GND'}, '', '', 'VREF bypass (datasheet 0.47 uF)', B)
 part('R16', '0R', 'R0603', {'1': 'BST1', '2': 'BST1C'}, '', '', 'BST1 series: 0R, raise to 2-10R if SW1 rings (EMI tune)', B)
@@ -174,8 +179,10 @@ part('C29', '22nF X7R', 'C0603', {'1': 'VCR', '2': 'GND'}, '', '', 'Compensation
 part('C30', '100pF C0G', 'C0603', {'1': 'VC', '2': 'GND'}, '', '', 'Compensation HF pole', B)
 part('R23', '200k 1%', 'R0805', {'1': 'VIN_P', '2': 'EN'}, '', '', 'EN/UVLO top: on 7.05 V, off 6.48 V', B)
 part('R24', '46.4k 1%', 'R0603', {'1': 'EN', '2': 'GND'}, '', '', 'EN/UVLO bottom', B)
-part('RV1', '200k CV', 'POT', {'1': 'VOUT_C', '2': 'FB', '3': 'FB'}, '3296W-1-204', 'Bourns', 'CV adjust (25-turn): VOUT = 1 V x (RV1+R25)/R25 -> 1.5-36 V', B)
-part('R25', '5.62k 1%', 'R0603', {'1': 'FB', '2': 'GND'}, '', '', 'FB bottom resistor (at U1 pin 19)', B)
+part('RV1', '200k CV', 'POT', {'1': 'VOUT_C', '2': 'FBD', '3': 'FBD'}, '3296W-1-204', 'Bourns', 'CV adjust (25-turn): VOUT = 1 V x (RV1+R25)/R25 -> 1.6-39 V (>=35.4 V with a -10 % pot)', B)
+part('R25', '5.23k 1%', 'R0603', {'1': 'FBD', '2': 'GND'}, '', '', 'FB divider bottom resistor', B)
+part('R46', '10k', 'R0603', {'1': 'FBD', '2': 'FB'}, '', '', 'FB pin series resistor: limits current when a battery above 6x the CV setting back-drives the divider', B)
+part('D14', 'MM3Z5V1', 'SOD323', {'1': 'FB', '2': 'GND'}, 'MM3Z5V1T1G', 'onsemi', 'Clamps FB pin below its 6 V abs max (with R46)', B)
 part('C33', '47pF C0G', 'C0603', {'1': 'FB', '2': 'GND'}, '', '', 'FB noise filter at the pin (pole ~600 kHz, no loop impact)', B)
 part('TH1', 'PRF18BC471', 'R0603', {'1': 'VREF', '2': 'CTRLP'}, 'PRF18BC471QB5RB', 'Murata', 'PTC: 470R cold, 4.7k@105C, 47k@120C -> thermal foldback/shutdown', B)
 part('R26', '20k 1%', 'R0603', {'1': 'CTRLP', '2': 'CTRL'}, '', '', 'CTRL divider top', B)
@@ -200,6 +207,7 @@ part('NT3', 'NetTie', 'NETTIE', {'1': 'ISP_K', '2': 'VOUT_C'}, '', '', 'Kelvin t
 part('NT4', 'NetTie', 'NETTIE', {'1': 'ISN_K', '2': 'OUTF'}, '', '', 'Kelvin tap ISN at RIS pad 2', B)
 part('F2', '10A 65V', 'FUSE', {'1': 'OUTF', '2': 'OUTP'}, '0451010.MRL', 'Littelfuse', 'Last-resort output fuse (never blows in normal faults)', B)
 part('J2', 'VOUT', 'TERM', {'1': 'OUTP', '2': 'OUTN'}, 'WJ500V-5.08-2P', 'Kangnex', 'Output terminal 5.08 mm (pin 1 = +). OUT- is switched: never tie to VIN-', B)
+part('D15', 'PMEG10030ELP', 'SOD128', {'1': 'VOUT_C', '2': 'GND'}, 'PMEG10030ELPX', 'Nexperia', 'Clamp: VOUT_C never below ~-1 V (inductive-load freewheel, reversed-battery hit); low-leakage 100 V Schottky', B)
 part('Q7', 'CSD19532Q5B', 'SON5x6', {'1': 'GND', '2': 'GND', '3': 'GND', '4': 'QLSG', '5': 'OUTN'}, 'CSD19532Q5B', 'TI', 'Q_LS low-side output switch, 100 V: blocks reversed battery', B)
 part('R32', '10k', 'R1206', {'1': 'VIN_P', '2': 'VG'}, '', '', 'VG10 supply feed (1206: up to 33 V across)', B)
 part('D10', 'BZX84C10', 'SOT23', {'1': 'GND', '3': 'VG'}, 'BZX84C10', '', 'VG10 = min(VIN, 10 V) gate supply', B)
@@ -218,8 +226,10 @@ part('R39', '10k', 'R0603', {'1': 'QRE2', '2': 'QRE'}, '', '', 'Q_R emitter resi
 part('R40', '100k', 'R0603', {'1': 'QRE', '2': 'QRB'}, '', '', 'Q_R E-B resistor (no reverse stress)', B)
 part('R41', '22k', 'R0603', {'1': 'QRB', '2': 'OUTP'}, '', '', 'Q_R base to OUT+', B)
 part('R42', '10k', 'R0603', {'1': 'QRC', '2': 'TRIP'}, '', '', 'Q_R collector to TRIP', B)
-part('Q11', 'MMBT3904', 'SOT23', {'1': 'QNB', '2': 'QNE', '3': 'QLSG'}, 'MMBT3904', '', 'Q_N: pulls Q_LS gate low when OUT+ is dragged >1.2 V below GND (reversed battery at low CV setting)', B)
-part('D13', '1N4148WS', 'SOD323', {'2': 'QNE', '1': 'OUTP'}, '1N4148WS', '', 'Q_N emitter diode: blocks normal OUT+ (up to 36 V) from the 6 V base-emitter junction', B)
+part('Q11', 'MMBT3904', 'SOT23', {'1': 'QNB', '2': 'QNE', '3': 'QLSG'}, 'MMBT3904', '', 'Q_N: pulls Q_LS gate low when OUT+ is dragged >1.85 V below GND (reversed battery at low CV setting)', B)
+part('D16', '1N4148WT', 'SOD523', {'2': 'QNE', '1': 'QNE2'}, '1N4148WT', '', 'Q_N second emitter diode: trip threshold -1.85 V, so an inductive load freewheeling through D15 (-1 V) never trips Q7', B)
+part('D13', '1N4148WS', 'SOD323', {'2': 'QNE2', '1': 'OUTP'}, '1N4148WS', '', 'Q_N emitter diode: blocks normal OUT+ (up to 39 V) from the 6 V base-emitter junction', B)
+part('R47', '100k', 'R0402', {'1': 'QNE', '2': 'QNB'}, '', '', 'Q_N emitter-base shunt: D13/D16 leakage never reverse-biases the EB junction', B)
 part('R44', '1k', 'R0603', {'1': 'QNB', '2': 'GND'}, '', '', 'Q_N base to GND (base drive ~1 mA during a fault)', B)
 part('D12', '1N4148WS', 'SOD323', {'2': 'OUTN', '1': 'RO1'}, '1N4148WS', '', 'RED OUT: conducts only when OUT- > OUT+ (<=36 V reverse in normal use)', B)
 part('R43', '10k', 'R1206', {'1': 'RO1', '2': 'AOUT'}, '', '', 'RED OUT current limit (<=35 V battery: 0.1 W)', B)

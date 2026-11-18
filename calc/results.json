@@ -2445,57 +2445,58 @@
     3.8849672484516455
    ]
   ],
-  "per_mlcc": 1.4794281451080138,
-  "hybrid_share": 0.14317046565561423
+  "per_mlcc": 0.805406751529023,
+  "hybrid_share": 2.2432819940777855,
+  "hybrid_limit_85C": 2.52
  },
  "ripple": [
   {
    "vin": 9,
    "vout": 12,
    "iout": 6.67,
-   "dv_cap_mV": 111.6,
-   "dv_esr_mV": 8.6,
-   "total_mV": 120.2
+   "dv_cap_mV": 103.9,
+   "dv_esr_mV": 6.5,
+   "total_mV": 110.4
   },
   {
    "vin": 9,
    "vout": 24,
    "iout": 3.33,
-   "dv_cap_mV": 139.5,
-   "dv_esr_mV": 8.6,
-   "total_mV": 148.1
+   "dv_cap_mV": 129.8,
+   "dv_esr_mV": 6.5,
+   "total_mV": 136.3
   },
   {
    "vin": 9,
    "vout": 35,
    "iout": 2.29,
-   "dv_cap_mV": 113.7,
-   "dv_esr_mV": 8.6,
-   "total_mV": 122.3
+   "dv_cap_mV": 105.8,
+   "dv_esr_mV": 6.5,
+   "total_mV": 112.3
   },
   {
    "vin": 24,
    "vout": 12,
    "iout": 6.67,
-   "dv_cap_mV": 20.3,
-   "dv_esr_mV": 2.4,
-   "total_mV": 22.7
+   "dv_cap_mV": 18.9,
+   "dv_esr_mV": 1.8,
+   "total_mV": 20.7
   },
   {
    "vin": 36,
    "vout": 12,
    "iout": 6.67,
-   "dv_cap_mV": 27.1,
-   "dv_esr_mV": 3.1,
-   "total_mV": 30.3
+   "dv_cap_mV": 25.2,
+   "dv_esr_mV": 2.4,
+   "total_mV": 27.6
   },
   {
    "vin": 36,
    "vout": 5,
    "iout": 8,
-   "dv_cap_mV": 14.6,
-   "dv_esr_mV": 1.7,
-   "total_mV": 16.3
+   "dv_cap_mV": 13.6,
+   "dv_esr_mV": 1.3,
+   "total_mV": 14.9
   }
  ],
  "damping": {
@@ -2518,15 +2519,23 @@
    "rising": 7.047655172413793
   },
   "FB": {
-   "R4": 5620.0,
+   "R4": 5230.0,
    "R3f": 0.0,
    "Rpot": 200000.0,
-   "vmin": 1.5338078291814947,
-   "vmax": 36.587188612099645,
-   "vmax_pot_lo": 33.02846975088968,
-   "vmax_pot_hi": 40.14590747330961,
-   "i_div": 0.00017793594306049823,
-   "err_bias_mV": 8.0
+   "vmin": 1.5736137667304015,
+   "vmax": 39.24091778202677,
+   "vmax_pot_lo": 35.41682600382409,
+   "vmax_pot_hi": 43.06500956022945,
+   "i_div": 0.00019120458891013384,
+   "err_bias_mV": 8.0,
+   "clamp": {
+    "R46": 10000.0,
+    "zener": "MM3Z5V1 (4.8-5.4 V)",
+    "tap_V": 22.877278250303767,
+    "I_zener": 0.0017777278250303767,
+    "P_zener": 0.009599730255164035,
+    "I_RV1": 0.004374240583232078
+   }
   },
   "CTRL": {
    "Rt": 20000.0,
@@ -2575,7 +2584,9 @@
   },
   "SS": {
    "C": 2.2e-07,
-   "tss": 0.0176,
+   "delay_to_0p25V": 0.0017609043128783833,
+   "ramp_0p25_to_1p25V": 0.008919315775370236,
+   "tss": 0.010679849943048457,
    "R_to_VREF": 100000.0,
    "mode": "keep-running (CC into short)"
   },
@@ -2622,16 +2633,18 @@
  "front_end": {
   "ladder": {
    "Ra": 280000.0,
-   "Rb": 17400.0,
-   "Rc": 4420.0,
-   "uv_fall": 7.607745187901008,
-   "uv_rise": 8.2993583868011,
-   "uv_rise_max": 8.714326306141155,
-   "uv_fall_min": 7.372596700274977,
-   "ov_rise": 40.9710407239819,
-   "ov_fall": 37.556787330316745,
-   "ov_rise_min": 39.94676470588235,
-   "ov_rise_max": 43.019592760181,
+   "Rb": 17800.0,
+   "Rc": 4220.0,
+   "uv_fall": 7.543642143505903,
+   "uv_rise": 8.229427792915532,
+   "uv_rise_max": 8.640899182561308,
+   "uv_fall_min": 7.310475022706631,
+   "ov_fall_min_worst": 37.401313546994515,
+   "ov_rise_max_worst": 45.98644118914261,
+   "ov_rise": 42.94123222748815,
+   "ov_fall": 39.3627962085308,
+   "ov_rise_min": 41.867701421800945,
+   "ov_rise_max": 45.08829383886256,
    "leak_err": 0.007368421052631579
   },
   "breaker": {
@@ -2708,11 +2721,11 @@
    "case": "Reversed 12.6V battery hot-plugged while set 14.4V",
    "path": "Q_P",
    "t_detect_us": 1.4119999999999981,
-   "i_peak": 118.71293218132458,
-   "I2t": 0.026945357630671782,
-   "E_aval_mJ": 3.7354304322401313,
-   "vc_min": 12.297180283950977,
-   "vpin_min": 14.236504676965911,
+   "i_peak": 118.87416694328877,
+   "I2t": 0.02701860118707319,
+   "E_aval_mJ": 3.7455841742426452,
+   "vc_min": 12.440919602056413,
+   "vpin_min": 14.384461428996774,
    "vds_after": 27.0,
    "ok": true
   },
@@ -2720,11 +2733,11 @@
    "case": "Reversed 25.6V battery hot-plugged while set 29.2V",
    "path": "Q_P",
    "t_detect_us": 0.726000000000002,
-   "i_peak": 161.34337627693105,
-   "I2t": 0.0319148458939067,
-   "E_aval_mJ": 10.37494694756641,
-   "vc_min": 27.162243166360447,
-   "vpin_min": 29.06919103175155,
+   "i_peak": 161.40369576370333,
+   "I2t": 0.03193871358557931,
+   "E_aval_mJ": 10.382705908260982,
+   "vc_min": 27.302723772692563,
+   "vpin_min": 29.18776354458171,
    "vds_after": 54.8,
    "ok": true
   },
@@ -2732,83 +2745,83 @@
    "case": "Reversed 35.0V battery hot-plugged while set 35.0V",
    "path": "Q_P",
    "t_detect_us": 0.5859999999999989,
-   "i_peak": 184.1285323436149,
-   "I2t": 0.03681900163539277,
-   "E_aval_mJ": 18.646824032657502,
-   "vc_min": 32.83530956086939,
-   "vpin_min": 34.86496484988627,
+   "i_peak": 184.17264521132077,
+   "I2t": 0.0368366456831306,
+   "E_aval_mJ": 18.655759784274267,
+   "vc_min": 32.98474776857243,
+   "vpin_min": 34.987395676333726,
    "vds_after": 70.0,
    "ok": true
   },
   {
    "case": "Reversed 12.6V battery hot-plugged while set 12.0V",
    "path": "Q_P",
-   "t_detect_us": 1.5519999999999938,
-   "i_peak": 114.99625707498353,
-   "I2t": 0.027135933517856613,
-   "E_aval_mJ": 3.406686898215754,
-   "vc_min": 9.831803358871085,
-   "vpin_min": 11.824145073575961,
+   "t_detect_us": 1.549999999999994,
+   "i_peak": 115.0856910759159,
+   "I2t": 0.027151668395363274,
+   "E_aval_mJ": 3.4119878031529884,
+   "vc_min": 9.98317345145146,
+   "vpin_min": 11.983263784421466,
    "vds_after": 24.6,
    "ok": true
   },
   {
    "case": "Reversed 12.6V battery hot-plugged while set 5.0V",
    "path": "Q_P",
-   "t_detect_us": 2.213999999999995,
-   "i_peak": 103.76646861395741,
-   "I2t": 0.02922294074337131,
-   "E_aval_mJ": 2.5636857163360496,
-   "vc_min": 2.4502637874165476,
-   "vpin_min": 4.749418094955016,
+   "t_detect_us": 2.207999999999995,
+   "i_peak": 103.90954968663274,
+   "I2t": 0.029238802749541326,
+   "E_aval_mJ": 2.5707605990663804,
+   "vc_min": 2.6316736393492395,
+   "vpin_min": 4.975797050031922,
    "vds_after": 17.6,
    "ok": true
   },
   {
    "case": "Reversed 12.6V battery hot-plugged while set 3.3V",
-   "path": "Q_N",
-   "t_detect_us": 3.1860000000000683,
-   "i_peak": 117.50103170957313,
-   "I2t": 0.05089073118107375,
-   "E_aval_mJ": 3.227872837002236,
-   "vc_min": -0.6752966714817495,
-   "vpin_min": 2.801346267512639,
+   "path": "Q_P",
+   "t_detect_us": 2.474000000000015,
+   "i_peak": 101.06231685347674,
+   "I2t": 0.03037522227429513,
+   "E_aval_mJ": 2.387874830302185,
+   "vc_min": 0.7691272887001629,
+   "vpin_min": 3.272024242558179,
    "vds_after": 15.899999999999999,
    "ok": true
   },
   {
    "case": "Reversed 12.6V battery hot-plugged while set 1.5V",
    "path": "Q_N",
-   "t_detect_us": 2.4600000000000137,
-   "i_peak": 88.95243536279197,
-   "I2t": 0.023421105840636294,
-   "E_aval_mJ": 1.815180257073796,
-   "vc_min": -0.8856088100712884,
-   "vpin_min": 1.2494980950338532,
+   "t_detect_us": 2.9100000000000477,
+   "i_peak": 99.27273680504646,
+   "I2t": 0.033605810090125796,
+   "E_aval_mJ": 2.260809989580902,
+   "vc_min": -1.366702081295596,
+   "vpin_min": 1.464245792942503,
    "vds_after": 14.1,
    "ok": true
   },
   {
    "case": "Reversed 3.7V battery hot-plugged while set 1.5V",
    "path": "Q_N",
-   "t_detect_us": 4.846000000000193,
-   "i_peak": 47.05380428126031,
-   "I2t": 0.011836367418775532,
-   "E_aval_mJ": 0.4647836921895165,
-   "vc_min": -0.9659185587250125,
-   "vpin_min": 1.0714549129285886,
+   "t_detect_us": 5.810000000000265,
+   "i_peak": 50.333146480607816,
+   "I2t": 0.01598591575456849,
+   "E_aval_mJ": 0.5318259920042281,
+   "vc_min": -1.4705251356669966,
+   "vpin_min": 1.4305505365676752,
    "vds_after": 5.2,
    "ok": true
   },
   {
    "case": "Reversed 25.6V battery hot-plugged while set 1.5V",
    "path": "Q_N",
-   "t_detect_us": 1.575999999999993,
-   "i_peak": 127.95573793697316,
-   "I2t": 0.033989664728186236,
-   "E_aval_mJ": 4.3449790007466556,
-   "vc_min": -0.9379066200620707,
-   "vpin_min": 1.3008364519440492,
+   "t_detect_us": 1.8599999999999843,
+   "i_peak": 142.9323481073211,
+   "I2t": 0.04821398847971459,
+   "E_aval_mJ": 5.421621652356974,
+   "vc_min": -1.3515999179703175,
+   "vpin_min": 1.473841714942539,
    "vds_after": 27.1,
    "ok": true
   }
@@ -2978,14 +2991,14 @@
    "detail": "4.00A / 2 = 2.00 A each, P = 12 mW"
   },
   {
-   "name": "Output caps RMS: per-MLCC <=2.5A and hybrid share well below its rating",
+   "name": "Output caps RMS: per-MLCC <= 2.5 A and hybrid share within its rating at 85 C (worst corner 9 V -> 35 V, 80 W)",
    "ok": true,
-   "detail": "worst 4.44A rms -> 1.48 A/MLCC, hybrid 0.14 A"
+   "detail": "total 4.44 A rms -> 0.81 A per MLCC, hybrid 2.24 A (limit ~2.5 A at 85 C; 1.8 A at 105 C)"
   },
   {
    "name": "Output ripple < 1% of VOUT at 80W (all listed corners)",
    "ok": true,
-   "detail": "9->12V: 120.2mV; 9->24V: 148.1mV; 9->35V: 122.3mV; 24->12V: 22.7mV; 36->12V: 30.3mV; 36->5V: 16.3mV"
+   "detail": "9->12V: 110.4mV; 9->24V: 136.3mV; 9->35V: 112.3mV; 24->12V: 20.7mV; 36->12V: 27.6mV; 36->5V: 14.9mV"
   },
   {
    "name": "Input MLCC rating >= 2x VIN_max (user note): 100V vs 2x36V",
@@ -3023,14 +3036,19 @@
    "detail": "LT8390 rises 7.05 V / falls 6.48 V; LM74930 falls >= 7.37 V"
   },
   {
-   "name": "CV range covers ~1.5-35V (pot +/-10%)",
+   "name": "CV range covers 1.6-35 V even with a -10 % pot",
    "ok": true,
-   "detail": "min 1.53 V, max 36.6 V (pot -10%: 33.0 V, +10%: 40.1 V)"
+   "detail": "min 1.57 V, max 39.2 V (pot -10%: 35.4 V, +10%: 43.1 V)"
+  },
+  {
+   "name": "FB pin stays < 6 V abs max with a 36 V battery on the output at the lowest CV setting",
+   "ok": true,
+   "detail": "divider tap 22.9 V -> 1.78 mA into D14 (10 mW of 300 mW), FB <= 5.4 V; R46 + C33 pole 339 kHz (no loop impact)"
   },
   {
    "name": "Max VOUT with +10% pot stays < FET/cap ratings",
    "ok": true,
-   "detail": "40.1 V, OVP trip 44.2 V < 50 V hybrid / 60 V FETs"
+   "detail": "43.1 V, OVP trip 47.4 V < 50 V hybrid / 60 V FETs"
   },
   {
    "name": "Low-side switch Q_LS gate drive >= 8 V at VIN=9 V (CSD19532Q5B Vth max 3.2 V, Rds spec @6/10 V)",
@@ -3078,24 +3096,29 @@
    "detail": "P=1.04 W x 30 C/W -> TJ=91 C"
   },
   {
+   "name": "OV release worst case (1 % resistors, threshold min) above 36 V: a 36 V supply always restarts",
+   "ok": true,
+   "detail": "release >= 37.4 V, trip <= 46.0 V (< 60 V LT8390 / FET ratings)"
+  },
+  {
    "name": "Front-end starts at VIN=9V worst case (UV rising max < 9 V)",
    "ok": true,
-   "detail": "UV rise max 8.71 V"
+   "detail": "UV rise max 8.64 V"
   },
   {
    "name": "Front-end OV never trips inside 36 V spec (OV rising min > 36 V)",
    "ok": true,
-   "detail": "OV rise min 39.95 V"
+   "detail": "OV rise min 41.87 V"
   },
   {
-   "name": "OV cut-off max protects LT8390 (60 V abs) with margin",
+   "name": "OV cut-off max protects LT8390 and the 60 V FETs (>= 10 V margin)",
    "ok": true,
-   "detail": "OV rise max 43.0 V"
+   "detail": "OV rise max 46.0 V (1 % resistors) vs 60 V"
   },
   {
    "name": "OV release (falling, min) above 36 V -> a 36 V supply always re-enables",
    "ok": true,
-   "detail": "OV fall min 36.40 V"
+   "detail": "OV fall min 38.15 V"
   },
   {
    "name": "Input fuse F1 (15 A) above max input current with margin (no nuisance blow)",
@@ -3153,52 +3176,62 @@
    "detail": "Q_P trip 83 A @25C / 62 A @100C vs ISOC 62.5 A"
   },
   {
+   "name": "No false trip: 8.3 A inductive load freewheeling through D15 (25 C)",
+   "ok": true,
+   "detail": "OUT+ = -0.99 V vs Q_N threshold -1.89 V (margin 0.90 V)"
+  },
+  {
+   "name": "No false trip: 8.3 A inductive load freewheeling through D15 (100 C)",
+   "ok": true,
+   "detail": "OUT+ = -0.84 V vs Q_N threshold -1.44 V (margin 0.60 V)"
+  },
+  {
    "name": "Fault: Reversed 12.6V battery hot-plugged while set 14.4V",
    "ok": true,
-   "detail": "Q_P trips at 1.41 us, peak 119 A (IDM 400 A), VOUT_C min 12.30 V (LT8390 VOUT pin 14.24 V), avalanche 3.7 mJ (EAS 274), then Q_LS holds 27.0 V (100 V FET)"
+   "detail": "Q_P trips at 1.41 us, peak 119 A (IDM 400 A), VOUT_C min 12.44 V (LT8390 VOUT pin 14.38 V), avalanche 3.7 mJ (EAS 274), then Q_LS holds 27.0 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 25.6V battery hot-plugged while set 29.2V",
    "ok": true,
-   "detail": "Q_P trips at 0.73 us, peak 161 A (IDM 400 A), VOUT_C min 27.16 V (LT8390 VOUT pin 29.07 V), avalanche 10.4 mJ (EAS 274), then Q_LS holds 54.8 V (100 V FET)"
+   "detail": "Q_P trips at 0.73 us, peak 161 A (IDM 400 A), VOUT_C min 27.30 V (LT8390 VOUT pin 29.19 V), avalanche 10.4 mJ (EAS 274), then Q_LS holds 54.8 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 35.0V battery hot-plugged while set 35.0V",
    "ok": true,
-   "detail": "Q_P trips at 0.59 us, peak 184 A (IDM 400 A), VOUT_C min 32.84 V (LT8390 VOUT pin 34.86 V), avalanche 18.6 mJ (EAS 274), then Q_LS holds 70.0 V (100 V FET)"
+   "detail": "Q_P trips at 0.59 us, peak 184 A (IDM 400 A), VOUT_C min 32.98 V (LT8390 VOUT pin 34.99 V), avalanche 18.7 mJ (EAS 274), then Q_LS holds 70.0 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 12.6V battery hot-plugged while set 12.0V",
    "ok": true,
-   "detail": "Q_P trips at 1.55 us, peak 115 A (IDM 400 A), VOUT_C min 9.83 V (LT8390 VOUT pin 11.82 V), avalanche 3.4 mJ (EAS 274), then Q_LS holds 24.6 V (100 V FET)"
+   "detail": "Q_P trips at 1.55 us, peak 115 A (IDM 400 A), VOUT_C min 9.98 V (LT8390 VOUT pin 11.98 V), avalanche 3.4 mJ (EAS 274), then Q_LS holds 24.6 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 12.6V battery hot-plugged while set 5.0V",
    "ok": true,
-   "detail": "Q_P trips at 2.21 us, peak 104 A (IDM 400 A), VOUT_C min 2.45 V (LT8390 VOUT pin 4.75 V), avalanche 2.6 mJ (EAS 274), then Q_LS holds 17.6 V (100 V FET)"
+   "detail": "Q_P trips at 2.21 us, peak 104 A (IDM 400 A), VOUT_C min 2.63 V (LT8390 VOUT pin 4.98 V), avalanche 2.6 mJ (EAS 274), then Q_LS holds 17.6 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 12.6V battery hot-plugged while set 3.3V",
    "ok": true,
-   "detail": "Q_N trips at 3.19 us, peak 118 A (IDM 400 A), VOUT_C min -0.68 V (LT8390 VOUT pin 2.80 V), avalanche 3.2 mJ (EAS 274), then Q_LS holds 15.9 V (100 V FET)"
+   "detail": "Q_P trips at 2.47 us, peak 101 A (IDM 400 A), VOUT_C min 0.77 V (LT8390 VOUT pin 3.27 V), avalanche 2.4 mJ (EAS 274), then Q_LS holds 15.9 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 12.6V battery hot-plugged while set 1.5V",
    "ok": true,
-   "detail": "Q_N trips at 2.46 us, peak 89 A (IDM 400 A), VOUT_C min -0.89 V (LT8390 VOUT pin 1.25 V), avalanche 1.8 mJ (EAS 274), then Q_LS holds 14.1 V (100 V FET)"
+   "detail": "Q_N trips at 2.91 us, peak 99 A (IDM 400 A), VOUT_C min -1.37 V (LT8390 VOUT pin 1.46 V), avalanche 2.3 mJ (EAS 274), then Q_LS holds 14.1 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 3.7V battery hot-plugged while set 1.5V",
    "ok": true,
-   "detail": "Q_N trips at 4.85 us, peak 47 A (IDM 400 A), VOUT_C min -0.97 V (LT8390 VOUT pin 1.07 V), avalanche 0.5 mJ (EAS 274), then Q_LS holds 5.2 V (100 V FET)"
+   "detail": "Q_N trips at 5.81 us, peak 50 A (IDM 400 A), VOUT_C min -1.47 V (LT8390 VOUT pin 1.43 V), avalanche 0.5 mJ (EAS 274), then Q_LS holds 5.2 V (100 V FET)"
   },
   {
    "name": "Fault: Reversed 25.6V battery hot-plugged while set 1.5V",
    "ok": true,
-   "detail": "Q_N trips at 1.58 us, peak 128 A (IDM 400 A), VOUT_C min -0.94 V (LT8390 VOUT pin 1.30 V), avalanche 4.3 mJ (EAS 274), then Q_LS holds 27.1 V (100 V FET)"
+   "detail": "Q_N trips at 1.86 us, peak 143 A (IDM 400 A), VOUT_C min -1.35 V (LT8390 VOUT pin 1.47 V), avalanche 5.4 mJ (EAS 274), then Q_LS holds 27.1 V (100 V FET)"
   },
   {
-   "name": "ISP-ISN pin differential kept < 1 V abs max during faults (10 ohm + BAV99 clamp ~0.8 V)",
+   "name": "ISP-ISN pin differential kept < 1 V abs max during faults (10 ohm + 1N4148WS antiparallel clamp ~0.8 V)",
    "ok": true,
    "detail": "clamp after series 10 ohm: pins see ~0.8 V while RIS sees up to several volts; ISOC (0.75 V) still reachable"
   }

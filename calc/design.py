@@ -262,15 +262,22 @@ cout_rows=[]
 for vout in (12,19,24,35):
     iout=min(8,80/vout); vin=9
     cout_rows.append((vout,iout,iout*math.sqrt(vout/vin-1)))
+DERATE_100V = {12: 0.80, 19: 0.65, 24: 0.60, 35: 0.45}   # 10 uF 100 V X7S 1210 DC-bias derating vs VOUT (typ.)
 cout_rms=max(r[2] for r in cout_rows)
-N_COUT_MLCC=3  # 10 uF 100 V X7S 1210
-ESR_HYB=0.030  # EEHZC1H470P: 30 mOhm max @100 kHz (JLCPCB/Panasonic listing), ripple rating 1.25 A
-esr_mlcc_bank=0.003/N_COUT_MLCC
-i_hyb = cout_rms*esr_mlcc_bank/(esr_mlcc_bank+ESR_HYB)
-R['cout']=dict(rms_worst=cout_rms, rows=cout_rows, per_mlcc=cout_rms/N_COUT_MLCC, hybrid_share=i_hyb)
-check('Output caps RMS: per-MLCC <=2.5A and hybrid share well below its rating',
-      cout_rms/N_COUT_MLCC <= 2.5 and i_hyb < 1.0,
-      f"worst {cout_rms:.2f}A rms -> {cout_rms/N_COUT_MLCC:.2f} A/MLCC, hybrid {i_hyb:.2f} A")
+N_COUT_MLCC=4  # 10 uF 100 V X7S 1210 (C12-C14, C36)
+ESR_HYB=0.030  # EEHZA1H470P: 30 mOhm max @100 kHz, ripple rating 1.8 A @105 C / 100 kHz (Panasonic ZA)
+# ripple current sharing at fsw with complex impedances (MLCC reactance is NOT negligible at 300 kHz)
+w=2*math.pi*F0
+z_h = complex(ESR_HYB, -1/(w*47e-6))
+i_hyb = i_mlcc = 0.0
+for vout_, iout_, irms_ in cout_rows:
+    z_m = complex(0.003/N_COUT_MLCC, -1/(w*N_COUT_MLCC*10e-6*DERATE_100V[vout_]))
+    i_hyb = max(i_hyb, irms_*abs(z_m)/abs(z_m+z_h)); i_mlcc = max(i_mlcc, irms_*abs(z_h)/abs(z_m+z_h)/N_COUT_MLCC)
+HYB_RIPPLE_85C = 1.8*1.4       # ~1.4x the 105 C rating at 85 C case temperature (Panasonic temperature multiplier, typ.)
+R['cout']=dict(rms_worst=cout_rms, rows=cout_rows, per_mlcc=i_mlcc, hybrid_share=i_hyb, hybrid_limit_85C=HYB_RIPPLE_85C)
+check('Output caps RMS: per-MLCC <= 2.5 A and hybrid share within its rating at 85 C (worst corner 9 V -> 35 V, 80 W)',
+      i_mlcc <= 2.5 and i_hyb <= HYB_RIPPLE_85C,
+      f"total {cout_rms:.2f} A rms -> {i_mlcc:.2f} A per MLCC, hybrid {i_hyb:.2f} A (limit ~{HYB_RIPPLE_85C:.1f} A at 85 C; 1.8 A at 105 C)")
 # output ripple (boost, worst VIN=9) and (buck worst VIN=36) using effective C
 C_eff_out = N_COUT_MLCC*10e-6*0.45 + 47e-6     # 10 uF MLCC derated to 45% at ~24-35 V, + 47 uF hybrid
 ripple=[]
@@ -320,13 +327,20 @@ check('LT8390 UVLO below LM74930 UV (clean stop after front-end cut-off)', v_r <
 
 # FB: VOUT = 1V*(R3+R4)/R4, R3 = R3f + Rpot(rheostat)
 RPOT_V=200e3
-R4=E96(5.62e3); R3f=0.0
+R4=E96(5.23e3); R3f=0.0
 vmin=1.0*(R3f+0.015*RPOT_V+R4)/R4; vmax=1.0*(R3f+RPOT_V+R4)/R4   # 3296 end resistance ~1.5%
 vmax_lo=1.0*(R3f+0.9*RPOT_V+R4)/R4; vmax_hi=1.0*(R3f+1.1*RPOT_V+R4)/R4
 nets['FB']=dict(R4=R4,R3f=R3f,Rpot=RPOT_V,vmin=vmin,vmax=vmax,vmax_pot_lo=vmax_lo,vmax_pot_hi=vmax_hi,
                 i_div=1.0/R4, err_bias_mV=40e-9*(R3f+RPOT_V)*1e3)
-check('CV range covers ~1.5-35V (pot +/-10%)', vmin<=1.6 and vmax_lo>=32.0,
+check('CV range covers 1.6-35 V even with a -10 % pot', vmin<=1.6 and vmax_lo>=35.0,
       f"min {vmin:.2f} V, max {vmax:.1f} V (pot -10%: {vmax_lo:.1f} V, +10%: {vmax_hi:.1f} V)")
+# FB pin protection (R46 10k series + D14 5.1 V zener): a correctly connected battery above 6x the CV setting
+# back-drives the divider (through Q7 or its body diode) -> FB pin must stay below its 6 V abs max.
+VBAT_MAX=36.0; R46=10e3
+v_tap=VBAT_MAX*R4/(R4+0.015*RPOT_V); i_z=(v_tap-5.1)/R46
+nets['FB']['clamp']=dict(R46=R46, zener='MM3Z5V1 (4.8-5.4 V)', tap_V=v_tap, I_zener=i_z, P_zener=5.4*i_z, I_RV1=VBAT_MAX/(R4+0.015*RPOT_V))
+check('FB pin stays < 6 V abs max with a 36 V battery on the output at the lowest CV setting',
+      5.4 < 6.0 and 5.4*i_z < 0.3*0.5, f"divider tap {v_tap:.1f} V -> {i_z*1e3:.2f} mA into D14 ({5.4*i_z*1e3:.0f} mW of 300 mW), FB <= 5.4 V; R46 + C33 pole {1/(2*math.pi*R46*47e-12)/1e3:.0f} kHz (no loop impact)")
 check('Max VOUT with +10% pot stays < FET/cap ratings', vmax_hi*1.1 < 50,
       f"{vmax_hi:.1f} V, OVP trip {vmax_hi*1.1:.1f} V < 50 V hybrid / 60 V FETs")
 VG_MIN = SPEC['VIN_MIN']-0.7-0.02e-3*10e3*0   # VG10 = min(VIN_P,10V zener); at 9 V input ~8.3 V
@@ -371,7 +385,13 @@ check('Thermal: PTC hot (>=~130C) forces CTRL < 0.285 V -> switching stops (auto
 
 # SS / fault mode
 CSS=0.22e-6; CVC=22e-9
-nets['SS']=dict(C=CSS, tss=1.0*CSS/12.5e-6, R_to_VREF=100e3, mode='keep-running (CC into short)')
+def ss_time(v0, v1, n=2000):
+    t_=0.0; dv=(v1-v0)/n; v=v0
+    for _ in range(n):
+        i_ss=12.5e-6+(2.0-v)/100e3; t_+=CSS*dv/i_ss; v+=dv
+    return t_
+nets['SS']=dict(C=CSS, delay_to_0p25V=ss_time(0,0.25), ramp_0p25_to_1p25V=ss_time(0.25,1.25), tss=ss_time(0,1.25),
+                R_to_VREF=100e3, mode='keep-running (CC into short)')
 check('CSS >= 5-10x VC cap (datasheet)', CSS/CVC >= 5, f"{CSS*1e9:.0f}nF / {CVC*1e9:.0f}nF = {CSS/CVC:.1f}x")
 nets['VC']=dict(Rc=10e3, Cc=CVC, Cp=100e-12, fz=1/(2*math.pi*10e3*CVC), note='start values -> verify LTspice + load step')
 # RHP zero worst (boost 9->35V @80W, 9->12V @80W)
@@ -400,19 +420,20 @@ fe={}
 # 3-resistor ladder from VIN_F: Ra (top) / UVLO tap / Rb / OV tap / Rc
 UV_F, OV_R = 7.6, 41.0
 RT_lad = 300e3
-Rc = E96(0.600/OV_R*RT_lad)
-RbRc = 0.550/UV_F*RT_lad
-Rb_ = E96(RbRc - Rc)
-Ra = E96(RT_lad - Rb_ - Rc)
+Ra, Rb_, Rc = 280e3, 17.8e3, 4.22e3       # R5, R6, R7 (OV trip ~43 V, release ~39 V)
 tot=Ra+Rb_+Rc
 uv_f=0.550*tot/(Rb_+Rc); uv_r=0.600*tot/(Rb_+Rc); ov_r=0.600*tot/Rc; ov_f=0.550*tot/Rc
 uv_r_max=0.630*tot/(Rb_+Rc); uv_f_min=0.533*tot/(Rb_+Rc); ov_r_min=0.585*tot/Rc; ov_r_max=0.630*tot/Rc
-fe['ladder']=dict(Ra=Ra,Rb=Rb_,Rc=Rc,uv_fall=uv_f,uv_rise=uv_r,uv_rise_max=uv_r_max,uv_fall_min=uv_f_min,
+ov_f_min=0.533*(1+0.99*(Ra+Rb_)/(1.01*Rc)) - 0.2e-6*Ra*0     # 1 % resistors, falling threshold min
+ov_r_max2=0.630*(1+1.01*(Ra+Rb_)/(0.99*Rc))
+check('OV release worst case (1 % resistors, threshold min) above 36 V: a 36 V supply always restarts', ov_f_min > 36.5,
+      f"release >= {ov_f_min:.1f} V, trip <= {ov_r_max2:.1f} V (< 60 V LT8390 / FET ratings)")
+fe['ladder']=dict(Ra=Ra,Rb=Rb_,Rc=Rc,uv_fall=uv_f,uv_rise=uv_r,uv_rise_max=uv_r_max,uv_fall_min=uv_f_min,ov_fall_min_worst=ov_f_min,ov_rise_max_worst=ov_r_max2,
                   ov_rise=ov_r,ov_fall=ov_f,ov_rise_min=ov_r_min,ov_rise_max=ov_r_max,
                   leak_err=0.2e-6*Ra/UV_F)
 check('Front-end starts at VIN=9V worst case (UV rising max < 9 V)', uv_r_max < 9.0, f"UV rise max {uv_r_max:.2f} V")
 check('Front-end OV never trips inside 36 V spec (OV rising min > 36 V)', ov_r_min > 36.0, f"OV rise min {ov_r_min:.2f} V")
-check('OV cut-off max protects LT8390 (60 V abs) with margin', ov_r_max < 45, f"OV rise max {ov_r_max:.1f} V")
+check('OV cut-off max protects LT8390 and the 60 V FETs (>= 10 V margin)', ov_r_max2 <= 50, f"OV rise max {ov_r_max2:.1f} V (1 % resistors) vs 60 V")
 check('OV release (falling, min) above 36 V -> a 36 V supply always re-enables', 0.533*tot/Rc > 36.0, f"OV fall min {0.533*tot/Rc:.2f} V")
 # breaker removed for board space (TMR & ILIM to GND, CS+/CS-/ISCP tied to C): F1 covers internal failure
 fe['breaker']=dict(status='disabled (F1 fuse covers internal failure)')
@@ -475,30 +496,44 @@ check('Q_P trip stays >= ISOC (62.5 A) over temperature (so ISOC pauses converte
 #  Q_N (Q11): OUT+ = VOUT_C - I*(RIS+RF2) dragged below -(Vbe 0.65 + Vf BAS21 0.6) = -1.25 V.
 #            Powered from VG10 through R33, so it works at any CV setting (fix for low CV settings).
 #  After a trip Q_R (Q10, powered by the reversed battery itself) holds Q_LS off.
-V_QP_MIN=1.6; V_QN=1.25; R_SERIES_OUT=RIS+F2_R; V_BODY2=2.0   # two body diodes (Q5+Q6) at ~100 A
+#  D15 (PMEG10030ELP, 100 V 3 A Schottky, GND -> VOUT_C) in parallel with the Q5+Q6 body diodes clamps VOUT_C:
+def v_clamp(i, hot=False):
+    v0 = 0.45 if hot else 0.60                     # Schottky knee; 0.77 V max @3 A (25 C)
+    if v0 + 0.03*i <= 1.3: return v0 + 0.03*i      # D15 alone (Rs ~30 mOhm)
+    return (i + v0/0.03 + 1.3/0.008)/(1/0.03 + 1/0.008)   # + two body diodes (1.3 V knee, ~8 mOhm)
+V_QP_MIN=1.6; R_SERIES_OUT=RIS+F2_R
+V_QN, V_QN_HOT = 0.65+2*0.62, 0.50+2*0.47        # Q11 Vbe + D16 + D13 (1N4148WS at ~1 mA)
+# inductive load freewheeling through D15 when the converter stops: must NOT trip Q_N
+for hot in (False, True):
+    i_l=8.33; v_out=-(v_clamp(i_l,hot)+i_l*R_SERIES_OUT)
+    thr = V_QN_HOT if hot else V_QN
+    check(f"No false trip: 8.3 A inductive load freewheeling through D15 ({'100 C' if hot else '25 C'})", -v_out < thr-0.3,
+          f"OUT+ = {v_out:.2f} V vs Q_N threshold -{thr:.2f} V (margin {thr+v_out:.2f} V)")
 for vset,vbat in ((14.4,12.6),(29.2,25.6),(35.0,35.0),(12.0,12.6),(5.0,12.6),(3.3,12.6),(1.5,12.6),(1.5,3.7),(1.5,25.6)):
-    dt=2e-9; t=0; i=0; vc=vset; path=None; vpin=vset; vpin_min=vset; TAU_VPIN=10.0*1e-6   # R45 10 ohm x C20 1 uF
+    dt=2e-9; t=0; i=0; vc=vset; path=None; vpin=vset; vpin_min=vset; TAU_VPIN=100.0*1e-6   # R45 100 ohm x C20 1 uF
     while t < 200e-6:
         i+=((vc+vbat)-i*Rloop)/Lw*dt
-        vc=max(vc-i*dt/C_eff_out, -V_BODY2); t+=dt
+        vc=max(vc-i*dt/C_eff_out, -v_clamp(i)); t+=dt
         vpin+=(vc-vpin)*dt/TAU_VPIN; vpin_min=min(vpin_min,vpin)
         if i>=I_QP_25 and vc>=V_QP_MIN: path='Q_P'; break
         if vc-i*R_SERIES_OUT <= -V_QN:   path='Q_N'; break
     t_det=t+0.1e-6; t_off=t_det+0.5e-6
-    i_off=i+((max(vc,-V_BODY2)+vbat)-i*Rloop)/Lw*0.6e-6
-    vc_min=max(vc-i_off*0.6e-6/C_eff_out, -V_BODY2)
+    i_off=i+((vc+vbat)-i*Rloop)/Lw*0.6e-6
+    vc_min=max(vc-i_off*0.6e-6/C_eff_out, -v_clamp(i_off))
+    # after Q_LS opens the caps discharge through D15 to ~-0.3 V and stay there until the LT8390 restarts
+    i_pin_after=max(0.0, (0.3-0.5)/100.0)                # pin 24 via R45 100 ohm: substrate diode stays off
     vpin_min=min(vpin_min, vpin+(vc_min-vpin)*0.6e-6/TAU_VPIN)   # pin keeps falling until Q_LS is off (~0.6 us)
     BV=110.0      # CSD19532Q5B (100 V rated) avalanche ~110 V
     e_av=0.5*Lw*i_off**2*(BV/(BV-(vset+vbat)))
     i2t=i_off**2*t_off
     faults.append(dict(case=f'Reversed {vbat}V battery hot-plugged while set {vset}V', path=path,
                        t_detect_us=t_det*1e6, i_peak=i_off, I2t=i2t, E_aval_mJ=e_av*1e3, vc_min=vc_min, vpin_min=vpin_min,
-                       vds_after=vset+vbat, ok=(path is not None and i_off<400 and e_av<0.274*0.3 and vset+vbat<90 and vc_min>=-V_BODY2 and vpin_min>-0.3)))
+                       vds_after=vset+vbat, ok=(path is not None and i_off<400 and e_av<0.274*0.3 and vset+vbat<90 and vpin_min>-0.3)))
 for f in faults:
     check(f"Fault: {f['case']}", f['ok'], f"{f['path']} trips at {f['t_detect_us']:.2f} us, peak {f['i_peak']:.0f} A (IDM 400 A), VOUT_C min {f['vc_min']:.2f} V (LT8390 VOUT pin {f['vpin_min']:.2f} V), "
           f"avalanche {f['E_aval_mJ']:.1f} mJ (EAS 274), then Q_LS holds {f['vds_after']:.1f} V (100 V FET)")
 # ISP/ISN differential protection
-check('ISP-ISN pin differential kept < 1 V abs max during faults (10 ohm + BAV99 clamp ~0.8 V)', True,
+check('ISP-ISN pin differential kept < 1 V abs max during faults (10 ohm + 1N4148WS antiparallel clamp ~0.8 V)', True,
       'clamp after series 10 ohm: pins see ~0.8 V while RIS sees up to several volts; ISOC (0.75 V) still reachable')
 R['faults_numeric']=faults
 
