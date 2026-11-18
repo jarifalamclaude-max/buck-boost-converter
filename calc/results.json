@@ -2705,9 +2705,10 @@
    "P_36V": 0.11155599999999997
   },
   "q_n": {
-   "trip_V": -1.25,
-   "Ib_at_minus2V": 0.00075,
-   "sink_capability_A": 0.075,
+   "trip_V": -1.8900000000000001,
+   "trip_V_hot": -1.44,
+   "Ib_0p5V_past_trip": 0.0005,
+   "sink_capability_A": 0.05,
    "R33_pullup_A": 0.001
   }
  },
@@ -3158,12 +3159,12 @@
   {
    "name": "Q_N sinks far more than the R33 gate pull-up (Q_LS gate actually goes low)",
    "ok": true,
-   "detail": "Q11 can sink ~75 mA vs 1 mA from R33; trips when OUT+ < -1.25 V"
+   "detail": "0.5 V past the trip point Q11 can sink ~50 mA vs 1 mA from R33; trips when OUT+ < -1.89 V (25 C)"
   },
   {
-   "name": "Q_N idle: D13 (250 V) blocks normal OUT+ up to 36 V from the 6 V VEBO of Q11",
+   "name": "Q_N idle: D13 + D16 (1N4148WS/WT, 75 V each) block normal OUT+ up to 39 V from the 6 V VEBO of Q11",
    "ok": true,
-   "detail": "BAS21 VR 250 V"
+   "detail": "1N4148WS VR 75 V (two in series)"
   },
   {
    "name": "LT8390 LOADEN tied to VREF (2.0 V) > rising threshold max 1.5 V -> switching always enabled",

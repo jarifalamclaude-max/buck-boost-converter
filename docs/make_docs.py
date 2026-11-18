@@ -58,7 +58,7 @@ comp = f"""
 <h2>1. Puro circuit ta ek nojore</h2>
 <p><b>VIN (J1)</b> → F1 fuse → D1 TVS → <b>LM74930 + Q1/Q2</b> (ulta polarity block, over/under-voltage cut-off)
 → <b>LT8390 + Q3–Q6 + L1</b> (4-switch synchronous buck-boost: input er cheye output beshi ba kom dutoi) → R31 (CC current sense)
-→ F2 → <b>VOUT+ (J2)</b>. VOUT− er return path e <b>Q7</b> (low-side switch) ache. Output e keu battery ulta lagale Q7 1–3 µs er moddhe off hoy
+→ F2 → <b>VOUT+ (J2)</b>. VOUT− er return path e <b>Q7</b> (low-side switch) ache. Output e keu battery ulta lagale Q7 1–6 µs er moddhe off hoy
 ar <b>red OUT LED</b> jole. Input ulta dile <b>red IN LED</b> jole, kichu gorom hoy na.</p>
 <div class="card"><b>Keno 4-switch buck-boost?</b> QS-1212CCBD te UC3843 (non-synchronous, diode diye) — diode e 0.5 V drop, 80 W e
 onek gorom. LT8390 te 4-ta MOSFET synchronous switch kore, tai efficiency 93–97 % (hisab nicher table e), ar input 9 V hok ba 36 V,
@@ -189,7 +189,7 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 <tr><td>Input + ar − ulta (12 V)</td><td>Red IN LED jolbe, output 0, kichu gorom na. Thik kore lagale abar chalu.</td></tr>
 <tr><td>Input 7 V (UV) / 45 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.2 V er upore / 39 V er niche abar chalu.</td></tr>
 <tr><td>Output short (J2 + ar − jor)</td><td>CC limit e current, green LED on, board halka gorom. Short khulle abar normal.</td></tr>
-<tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–3 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
+<tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–6 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
 <tr><td>Output e battery thik polarity te, input bondho</td><td>Battery drain hoy na (Q7 off), shudhu µA leakage.</td></tr></table>
 <div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na (common ground na).</b> OUT− Q7 diye switch kora. Jorle converter cholbe, kintu (1) output e ulta battery ar block hobe na (F2 kete jabe), (2) tokhon input o ulta dile supply Q7 er body diode diye short hobe. Load ar supply alada (floating) rakhun — bench smoke-tester e emnitei thake.</div>
 <div class="card warn"><b>Power limit:</b> CC pot emon bhabe set korun jate VOUT × ICC ≤ 80 W (jemon 36 V e ≤ 2.2 A). Beshi load dile board gorom hobe, PTC ~105 °C e current komabe; F1 (15 A) shudhu last resort.</div>
@@ -208,12 +208,14 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 <table><tr><th>Problem</th><th>Check</th></tr>
 <tr><td>Green LED jole na</td><td>Input &gt; 8.2 V? Red IN jolche? Polarity? U1 pin 7 (VIN) e voltage? EN pin (9) &gt; 1.22 V?</td></tr>
 <tr><td>Green jole, output 0</td><td>CTRL (U1 pin 13) &gt; 0.3 V? (RV2 khub kom hole latch) RV2 ektu clockwise. Red OUT jolche?</td></tr>
-<tr><td>Output voltage set hoy na</td><td>RV1 er solder, R25 (5.62 k) at U1 pin 19.</td></tr>
+<tr><td>Output voltage set hoy na</td><td>RV1 er solder, R25 (5.23 k) at U1 pin 19.</td></tr>
 <tr><td>Load e voltage pore jay</td><td>CC limit kom set — RV2 clockwise. TP1 (ISMON) = 0.25 V + 10 × I × 12 mΩ.</td></tr>
 <tr><td>Whine/shabdo, garom</td><td>Compensation (R22/C29/C30) start value — oscilloscope e load-step dekhe tune korun (README "limitations").</td></tr></table>
 
 <h2>9. PCB</h2>
 <div class="two"><div>{img_tag('pcb_top.png')}<p class="small">Top (power + parts)</p></div><div>{img_tag('pcb_bottom.png')}<p class="small">Bottom (GND plane, mirrored)</p></div></div>
+<p>Bottom side er silkscreen e <b>BRACU Duburi logo</b> ar <b>"Designed by Jarif Alam"</b> lekha ache (bottom e kono part nei, tai heatsink lagano jay;
+thermal pad logo-r upor dile kono shomossha nei).</p>
 """
 def write_build_guide():
     open(os.path.join(SRC, 'build_guide.html'), 'w').write(page('SafeBuck-80 Build Guide', build_html()))

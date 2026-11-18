@@ -46,7 +46,7 @@ LEDs / guard:
   red_fault: {'src': 'VIN_F via BAS21', 'R': 11200.0, 'I_at': {7.6: 0.0004464285714285714, 12: 0.0008392857142857143, 24: 0.001910714285714286, 38.5: 0.0032053571428571426, 60: 0.005125}, 'P_each_60V': 0.1470875}
   red_in_reverse: {'R': 11200.0, 'I_at': {9: 0.0005089285714285714, 12: 0.0007767857142857142, 24: 0.001848214285714286, 36: 0.002919642857142857, 60: 0.0050625}, 'P_each_60V': 0.143521875}
   red_out: {'R': 10000.0, 'I_at': {3.7: 0.00011, 6: 0.00033999999999999997, 12: 0.0009400000000000001, 24: 0.0021400000000000004, 36: 0.0033399999999999997}, 'P_36V': 0.11155599999999997}
-  q_n: {'trip_V': -1.25, 'Ib_at_minus2V': 0.00075, 'sink_capability_A': 0.075, 'R33_pullup_A': 0.001}
+  q_n: {'trip_V': -1.8900000000000001, 'trip_V_hot': -1.44, 'Ib_0p5V_past_trip': 0.0005, 'sink_capability_A': 0.05, 'R33_pullup_A': 0.001}
 
 Ripple:
    {'vin': 9, 'vout': 12, 'iout': 6.67, 'dv_cap_mV': 103.9, 'dv_esr_mV': 6.5, 'total_mV': 110.4}
@@ -140,9 +140,9 @@ CHECKS:
   [PASS] RED OUT resistor R43 (1206, 0.25 W) within power with a 36 V battery reversed
          112 mW; LED visible from ~3.5 V battery (0.3 mA at 6 V)
   [PASS] Q_N sinks far more than the R33 gate pull-up (Q_LS gate actually goes low)
-         Q11 can sink ~75 mA vs 1 mA from R33; trips when OUT+ < -1.25 V
-  [PASS] Q_N idle: D13 (250 V) blocks normal OUT+ up to 36 V from the 6 V VEBO of Q11
-         BAS21 VR 250 V
+         0.5 V past the trip point Q11 can sink ~50 mA vs 1 mA from R33; trips when OUT+ < -1.89 V (25 C)
+  [PASS] Q_N idle: D13 + D16 (1N4148WS/WT, 75 V each) block normal OUT+ up to 39 V from the 6 V VEBO of Q11
+         1N4148WS VR 75 V (two in series)
   [PASS] LT8390 LOADEN tied to VREF (2.0 V) > rising threshold max 1.5 V -> switching always enabled
          pin 11 -> pin 12
   [PASS] Q_P trip stays >= ISOC (62.5 A) over temperature (so ISOC pauses converter first -> no chatter on correct-battery inrush)

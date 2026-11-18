@@ -18,13 +18,15 @@ output short and a reversed battery on the output. Every one of these only light
 | Protection | reverse input to −60 V, OV cut-off ~43 V, UV 7.5 V, inrush limit, input short while running (Q1 gate clamp), output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–6 µs), battery above the CV setting (FB clamp), inductive loads (VOUT clamp diode), thermal foldback (PTC), last-resort fuses on both sides |
 | Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
 | PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
+| Board art | BRACU **Duburi** logo and "Designed by Jarif Alam" on the bottom silkscreen |
 
 | Top (power stage + parts) | Bottom (GND plane, mirrored) |
 |---|---|
 | ![PCB top](docs/img/pcb_top.png) | ![PCB bottom](docs/img/pcb_bottom.png) |
 
 > **Status / caveat:** the design is checked by calculation (`calc/design.py`: 57 checks, 56 pass, the one "fail" is the
-> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks (`hardware/verify.py`), by KiCad DRC and by
+> "you need a heatsink at 80 W" note), by netlist ↔ schematic ↔ PCB consistency checks (`hardware/verify.py`: all pass), by KiCad DRC
+> (fully routed: 0 unconnected, 0 clearance, 0 dangling; the only DRC warnings are silkscreen overlaps and library-path notes) and by
 > two rounds of independent review (the second round's 8 major findings are fixed or listed under Limitations). **It has not been built and measured yet.** Build one, follow the first-power-up steps in the build guide,
 > and check the loop compensation with a load step before trusting it at 80 W.
 
@@ -54,8 +56,8 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/netlist.py` | **Single source of truth.** Every part: ref, value, footprint, MPN, LCSC number, role and pad → net map. Everything below is generated from this file |
 | `hardware/placement.py` | Position/rotation of every part on the 65 × 48 mm board (hot-loop layout explained in the header) |
 | `hardware/build_pcb.py` | Builds the custom LT8390 footprint, places all footprints, assigns nets, draws the outline, runs DRC → `kicad/SafeBuck-80_placed.kicad_pcb` |
-| `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN (zones as fixed wires, net-tie keepouts) → Freerouting → imports the session → GND fill, stitching vias, DRC → `kicad/SafeBuck-80.kicad_pcb` |
-| `hardware/complete_routes.py` | Two-layer grid A* router (0.2 mm track, 0.205 mm gap) that finishes the few connections Freerouting leaves open |
+| `hardware/route.py` | Power copper zones (union of rectangles, checked against foreign pads) → Specctra DSN (zones as fixed wires, net-tie keepouts) → Freerouting → imports the session → hand fan-out stubs at U2 → completion router → GND pours, stitching vias, GND pocket merge vias and hookups, dead-end cleanup, DRC → `kicad/SafeBuck-80.kicad_pcb` |
+| `hardware/complete_routes.py` | Two-layer grid A* router (0.05 mm grid, 0.2 mm track, 0.205 mm gap) that finishes the connections Freerouting leaves open: rip-up with rollback, Kelvin net-tie entry, via keep-back at fine-pitch pins, string-pulled tracks |
 | `hardware/make_schematic.py` | Generates the KiCad schematic `kicad/SafeBuck-80.kicad_sch` + project symbol library `SafeBuck.kicad_sym`; symbol UUIDs match the footprints |
 | `hardware/make_jlcpcb.py` | Makes the JLCPCB package (Gerber + drill zip, BOM, CPL) |
 | `hardware/make_logo.py` | Turns a logo image (`docs/img/duburi_logo.png`) into a silkscreen footprint for the board's bottom side; without an image it draws a "DUBURI" text badge |
@@ -68,7 +70,7 @@ output short and a reversed battery on the output. Every one of these only light
 | `hardware/kicad/sym-lib-table`, `fp-lib-table` | Point KiCad at the project libraries (loaded automatically) |
 | `hardware/kicad/drc_routed.rpt` | KiCad DRC report of the routed board |
 | `calc/design.py` | Every design equation from the datasheets: inductor, RSENSE, slope compensation, losses, ripple, UVLO/OV, inrush, LEDs, thermal, fault simulation of a reversed battery hit → `report.txt`, `results.json` |
-| `calc/report.txt` | Human-readable result of all 53 checks |
+| `calc/report.txt` | Human-readable result of all 57 checks |
 | `docs/make_docs.py`, `docs/print_pdf.js`, `docs/src/*.html` | Build the PDF guides (edit the HTML, run the script) |
 | `jlcpcb/` | Files to upload to JLCPCB |
 
@@ -87,7 +89,7 @@ J1 VIN+ ─ F1 15A ─┬─ D1 TVS        ┌──────── LT8390 4-
              (HGATE)  CSRC (DGATE) │  Q4 ┘   (peak current)          └ Q5        │     (CC sense)
                      LM74930       └─────────────────────────────────────────────┘
              reverse/OV/UV, FLT→red IN                                    J2 OUT− ─ Q7 (100 V) ─ GND
-                                                                 trips: Q9 (I>83 A), Q11 (OUT+<−1.25 V), hold: Q10, red OUT
+                                                                 trips: Q9 (I>83 A), Q11 (OUT+<−1.85 V), hold: Q10, red OUT
 ```
 
 ## Fault matrix (vhul connection hole ki hoy)
@@ -177,3 +179,11 @@ which is how a bench "smoke tester" is normally wired.
   short.
 - C18 carries about 2.2 A rms at the 9 V → 35 V, 80 W corner (rated 1.8 A at 105 °C, about 2.5 A at 85 °C). For long use at
   that corner, keep the board cool or stay at or below 65 W.
+- **Ground around U1:** on two layers the signal tracks around the LT8390 cut the bottom GND plane into pockets. They are
+  joined to the main GND by extra vias, and U1's exposed pad also connects through its 10 thermal vias and a top-layer
+  link to pin 10, but this is not a solid plane under the IC. U1 loses up to about 1 W at 36 V in (INTVCC regulator).
+  If it runs hot, add a heatsink pad under the board there, or move to a 4-layer board with an unbroken GND layer.
+- One GND via (for C29, the compensation capacitor) touches the edge of C28's ground pad. Vias are tented, so very little
+  solder is drawn into it, but check that C28 is soldered properly.
+- The PCB was laid out by scripts (Freerouting plus a custom completion router), not by hand. It passes DRC, but look
+  over the copper in KiCad before you order, especially the hot loops (see `docs/layout-rules.md`).

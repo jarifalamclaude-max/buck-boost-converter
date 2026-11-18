@@ -52,6 +52,8 @@ How it is done on this board:
   lines.
 * LSP/LSN and ISP/ISN run as close pairs to U1. ISP/ISN have 10 Ω + antiparallel diodes at U1 (R28,
   R29, D8, D9), which also protects the pins during a reversed-battery hit.
+* A Kelvin track enters its net-tie pad from the far side, away from the tie bar. KiCad only lets a track touch
+  the bar inside the pad, and this also keeps the sense line out of the shunt's current path.
 
 ## 5. Controller (U1 LT8390) placement
 
@@ -59,8 +61,9 @@ How it is done on this board:
   * VIN, INTVCC, VREF bypass caps on the left;
   * RT, VC compensation, SS, FB divider and the VOUT RC on the right;
   * BST caps at the top corners.
-* U1's exposed pad has 10 thermal vias (0.3 mm) into the bottom GND plane. The LT8390 loses up to about
+* U1's exposed pad has 10 thermal vias (0.3 mm) into the bottom GND plane, connected solid (no thermal relief). The LT8390 loses up to about
   1 W in its INTVCC regulator at 36 V in.
+* U1's GND pin 10 is tied straight to the exposed pad by a short top-layer track.
 * The FB bottom resistor (R25) and its 47 pF filter (C33) sit **at the FB pin**. The long trace runs to
   the CV pot (RV1, at the board edge so it can be adjusted), and the pot side of that trace is
   low-impedance.
@@ -71,6 +74,15 @@ How it is done on this board:
   at U1's exposed pad, and the bottom-layer plane connects everything.
 * GND stitching vias are added on a 2.6 mm grid wherever both layers are GND. That keeps the two GND
   layers one low-inductance node and spreads heat.
+* Around U1 the signal tracks cut both pours into small pockets. Each pocket is joined to the main GND by an
+  extra via where it overlaps GND copper on the other layer (`route.gnd_merge`). One pocket (C29's ground,
+  the compensation capacitor) has no such overlap. It reaches C28's ground pad through a 3.3 mm bottom-layer
+  track and a via that touches the edge of that pad. Vias are tented, so very little solder is drawn away from
+  C28. (`route.gnd_hookup` is the fallback that searches such a link with exact clearance checks if the router
+  cannot find one.)
+* U2's left pin row (13–18) is fanned out by hand-placed stubs (`route.FANOUT`): CSRC runs straight out to a via,
+  and pin 16 (GND) runs below it to its own via into the bottom plane. Without this the router closes in the
+  neighbouring pins.
 
 ## 7. Thermal
 

@@ -470,13 +470,14 @@ check('RED IN resistors (1206, 0.25 W) within power at +/-60 V input', max(leds[
       f"{max(leds['red_fault']['P_each_60V'],leds['red_in_reverse']['P_each_60V'])*1e3:.0f} mW each")
 check('RED OUT resistor R43 (1206, 0.25 W) within power with a 36 V battery reversed', leds['red_out']['P_36V'] < 0.2,
       f"{leds['red_out']['P_36V']*1e3:.0f} mW; LED visible from ~3.5 V battery ({leds['red_out']['I_at'][6]*1e3:.1f} mA at 6 V)")
-# Q_N (Q11 MMBT3904): base -> R44 1k -> GND, emitter -> D13 BAS21 -> OUT+, collector -> Q_LS gate (QLSG)
-qn_trip = -(0.65+0.60)                    # OUT+ below about -1.25 V (25 C); ~-1.0 V hot, ~-1.45 V cold
-qn_ib = (2.0-1.25)/1e3                    # base current with OUT+ at -2 V
-leds['q_n']=dict(trip_V=qn_trip, Ib_at_minus2V=qn_ib, sink_capability_A=qn_ib*100, R33_pullup_A=10/10e3)
+# Q_N (Q11 MMBT3904): base -> R44 1k -> GND, emitter -> D16 -> D13 -> OUT+ (two 1N4148W), collector -> Q_LS gate (QLSG)
+V_QN, V_QN_HOT = 0.65+2*0.62, 0.50+2*0.47        # Q11 Vbe + D16 + D13 at ~1 mA: trips below about -1.9 V (25 C), -1.4 V (100 C)
+qn_ib = 0.5/1e3                                  # base current 0.5 V past the trip point (R44 1k)
+leds['q_n']=dict(trip_V=-V_QN, trip_V_hot=-V_QN_HOT, Ib_0p5V_past_trip=qn_ib, sink_capability_A=qn_ib*100, R33_pullup_A=10/10e3)
 check('Q_N sinks far more than the R33 gate pull-up (Q_LS gate actually goes low)', qn_ib*100 > 20*(10/10e3),
-      f"Q11 can sink ~{qn_ib*100*1e3:.0f} mA vs 1 mA from R33; trips when OUT+ < {qn_trip:.2f} V")
-check('Q_N idle: D13 (250 V) blocks normal OUT+ up to 36 V from the 6 V VEBO of Q11', 250 > 36*1.5, 'BAS21 VR 250 V')
+      f"0.5 V past the trip point Q11 can sink ~{qn_ib*100*1e3:.0f} mA vs 1 mA from R33; trips when OUT+ < {-V_QN:.2f} V (25 C)")
+check('Q_N idle: D13 + D16 (1N4148WS/WT, 75 V each) block normal OUT+ up to 39 V from the 6 V VEBO of Q11', 75 > 39*1.3,
+      '1N4148WS VR 75 V (two in series)')
 check('LT8390 LOADEN tied to VREF (2.0 V) > rising threshold max 1.5 V -> switching always enabled', 1.97 > LT['LOADEN_R'][2], 'pin 11 -> pin 12')
 R['leds']=leds
 
@@ -493,7 +494,7 @@ check('Q_P trip stays >= ISOC (62.5 A) over temperature (so ISOC pauses converte
 # Trip paths (whichever fires first):
 #  Q_P (Q9): I_RIS > 83 A, but Q9 is powered by its own emitter (VOUT_C): it can only drive Q8 while
 #            VOUT_C > V_QP_MIN = Vec(sat) 0.2 + Vbe(Q8) 0.7 + ~0.7 V across R38/R34 for >=50 uA base drive.
-#  Q_N (Q11): OUT+ = VOUT_C - I*(RIS+RF2) dragged below -(Vbe 0.65 + Vf BAS21 0.6) = -1.25 V.
+#  Q_N (Q11): OUT+ = VOUT_C - I*(RIS+RF2) dragged below -(Vbe 0.65 + 2 x Vf 1N4148W 0.62) = -1.89 V.
 #            Powered from VG10 through R33, so it works at any CV setting (fix for low CV settings).
 #  After a trip Q_R (Q10, powered by the reversed battery itself) holds Q_LS off.
 #  D15 (PMEG10030ELP, 100 V 3 A Schottky, GND -> VOUT_C) in parallel with the Q5+Q6 body diodes clamps VOUT_C:
@@ -502,7 +503,6 @@ def v_clamp(i, hot=False):
     if v0 + 0.03*i <= 1.3: return v0 + 0.03*i      # D15 alone (Rs ~30 mOhm)
     return (i + v0/0.03 + 1.3/0.008)/(1/0.03 + 1/0.008)   # + two body diodes (1.3 V knee, ~8 mOhm)
 V_QP_MIN=1.6; R_SERIES_OUT=RIS+F2_R
-V_QN, V_QN_HOT = 0.65+2*0.62, 0.50+2*0.47        # Q11 Vbe + D16 + D13 (1N4148WS at ~1 mA)
 # inductive load freewheeling through D15 when the converter stops: must NOT trip Q_N
 for hot in (False, True):
     i_l=8.33; v_out=-(v_clamp(i_l,hot)+i_l*R_SERIES_OUT)
