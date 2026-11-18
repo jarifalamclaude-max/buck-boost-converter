@@ -34,7 +34,9 @@ Upload these three files, nothing else is needed:
 
 1. **BOM match:** every line has an LCSC number. Stock was checked on 2026-11-18. If a part is out of stock:
    * Passives: choose another part with the same value, size and voltage.
-   * **Do not substitute** U1 (LT8390), U2 (LM74930), Q1–Q7, L1, R15, R31, C7/C8/C12–C14 (10 µF **100 V**) or TH1.
+   * **Do not substitute** U1 (LT8390), U2 (LM74930), Q1–Q7, L1, R15, R31, D15, C7/C8/C12–C14/C36 (10 µF **100 V**) or TH1.
+   * Only one exception: if C18 (EEHZA1H470P) is out of stock, use EEHZC1H470P (LCSC C454346). It has the same footprint but a
+     lower ripple rating, so with 9 V input stay at or below 65 W.
 2. **Placement preview:** compare each of these with the silkscreen:
    * the pin-1 dot of U1 and U2;
    * the 4-lead side of every MOSFET (Q1–Q7);
@@ -47,6 +49,7 @@ Upload these three files, nothing else is needed:
    BOM and solder them yourself. They are easy, large pins.
 4. **Not fitted (DNP):** R18, C26, R19, C27 (snubbers), the net-ties NT1–NT4, the test points and the mounting holes are not in
    the BOM. That is intentional.
+5. **Smallest parts:** D16 is SOD-523 and R47 is 0402. Both are standard for JLC.
 
 ## After delivery
 

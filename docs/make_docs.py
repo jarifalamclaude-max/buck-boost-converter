@@ -74,7 +74,7 @@ output jekono voltage (1.6–36 V) smooth bhabe dey — buck, boost ar buck-boos
 <li>FB pin abs max 6 V: R46 (10 k) + D14 (5.1 V zener) pin take rokkha kore — output e CV er cheye onek beshi voltage er battery lagaleo.</li></ul></div>
 <div class="card"><h3>U2 — LM74930-Q1 (Texas Instruments) · LCSC C22428070</h3>
 <ul><li>Ideal-diode + load-switch controller, −65 V porjonto ulta voltage sojjo kore. Q2 (DGATE) ulta polarity block kore, Q1 (HGATE) over-voltage/under-voltage e line kete dey.</li>
-<li>UV/OV ladder (R5 280k, R6 17.4k, R7 4.42k): <b>UV {fe.get('uv_fall', 7.6):.1f} V (falling) / {fe.get('uv_rise', 8.3):.1f} V (rising), OV {fe.get('ov_rise', 41.0):.1f} V cut-off, {fe.get('ov_fall', 37.6):.1f} V e abar on</b>.</li>
+<li>UV/OV ladder (R5 280k, R6 17.8k, R7 4.22k): <b>UV {fe.get('uv_fall', 7.6):.1f} V (falling) / {fe.get('uv_rise', 8.3):.1f} V (rising), OV {fe.get('ov_rise', 41.0):.1f} V cut-off, {fe.get('ov_fall', 37.6):.1f} V e abar on</b>.</li>
 <li>CdVdT (C5 3.3 nF + R4 100 Ω) inrush ke ~1.3–2.6 A te rakhe — hot-plug e spark/fuse problem nai.</li>
 <li>D17 (15 V zener, TI er DZ1): chalu obosthay input short hole C5 Q1 er gate ke upore dhore rakhe — zener VGS 15 V er niche rakhe (Q1 limit 20 V).</li>
 <li>FLT pin → red IN LED. Built-in circuit breaker disable kora (TMR, ILIM → GND; CS+/CS−/ISCP → C): F1 fuse shudhu MOSFET short hole last resort.</li>
@@ -83,7 +83,7 @@ output jekono voltage (1.6–36 V) smooth bhabe dey — buck, boost ar buck-boos
 <h2>3. Power parts</h2>
 <div class="card"><h3>Q3–Q6 — CSD18532Q5B ×4 (TI, 60 V) · LCSC C882766</h3>
 LT8390 er gate drive 5 V (INTVCC), tai <b>logic-level</b> MOSFET lagbe: 4.5 V e 4.3 mΩ max. Gate charge kom (~19 nC @4.5 V) — LT8390 er
-INTVCC regulator e loss kom (~0.6–1 W @36 V). 60 V rating, OV cut-off 41 V er upore margin. SON 5×6 package, PCB te heat chhore dey.
+INTVCC regulator e loss kom (~0.6–1 W @36 V). 60 V rating, OV cut-off (~43 V, worst 46 V) er upore margin. SON 5×6 package, PCB te heat chhore dey.
 (CSD18540Q5B ar o bhalo, kintu JLCPCB te stock e 2-ta — tai eta.)</div>
 <div class="card"><h3>Q1, Q2, Q7 — CSD19532Q5B ×3 (TI, 100 V) · LCSC C473333</h3>
 Input protection (Q1/Q2) ar output reverse-battery switch (Q7). Q7 ke output voltage + ulta battery = ~70 V porjonto block korte hoy, tai 100 V.
@@ -187,7 +187,7 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 <h2>5. Protection test (ichhe kore vhul connection)</h2>
 <table><tr><th>Test (supply current limit 1 A rakhun)</th><th>Expected</th></tr>
 <tr><td>Input + ar − ulta (12 V)</td><td>Red IN LED jolbe, output 0, kichu gorom na. Thik kore lagale abar chalu.</td></tr>
-<tr><td>Input 7 V (UV) / 45 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 39 V er niche abar chalu.</td></tr>
+<tr><td>Input 7 V (UV) / 45 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.2 V er upore / 39 V er niche abar chalu.</td></tr>
 <tr><td>Output short (J2 + ar − jor)</td><td>CC limit e current, green LED on, board halka gorom. Short khulle abar normal.</td></tr>
 <tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–3 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
 <tr><td>Output e battery thik polarity te, input bondho</td><td>Battery drain hoy na (Q7 off), shudhu µA leakage.</td></tr></table>
@@ -202,11 +202,11 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 
 <h2>7. LED er mane</h2>
 <table><tr><th>LED</th><th>Mane</th></tr><tr><td>Green (LED1)</td><td>Controller er power (INTVCC 5 V) ache.</td></tr>
-<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; ~43 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
+<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; ~43 V / &lt; 7.5 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
 
 <h2>8. Troubleshooting</h2>
 <table><tr><th>Problem</th><th>Check</th></tr>
-<tr><td>Green LED jole na</td><td>Input &gt; 8.3 V? Red IN jolche? Polarity? U1 pin 7 (VIN) e voltage? EN pin (9) &gt; 1.22 V?</td></tr>
+<tr><td>Green LED jole na</td><td>Input &gt; 8.2 V? Red IN jolche? Polarity? U1 pin 7 (VIN) e voltage? EN pin (9) &gt; 1.22 V?</td></tr>
 <tr><td>Green jole, output 0</td><td>CTRL (U1 pin 13) &gt; 0.3 V? (RV2 khub kom hole latch) RV2 ektu clockwise. Red OUT jolche?</td></tr>
 <tr><td>Output voltage set hoy na</td><td>RV1 er solder, R25 (5.62 k) at U1 pin 19.</td></tr>
 <tr><td>Load e voltage pore jay</td><td>CC limit kom set — RV2 clockwise. TP1 (ISMON) = 0.25 V + 10 × I × 12 mΩ.</td></tr>

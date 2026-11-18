@@ -178,6 +178,19 @@ def build(route=True):
     for tie, shunt, sgn in (('NT1', 'R15', -1), ('NT2', 'R15', +1), ('NT3', 'R31', -1), ('NT4', 'R31', +1)):
         place_tie(tie, shunt, sgn)
 
+    # silkscreen help for first-time builders: polarity, pot names, LED meaning, the common-ground warning
+    LABELS = [('+', 9.3, 27.6, 1.6, 0), ('-', 9.3, 22.5, 1.6, 0), ('VIN', 9.3, 25.05, 0.8, 0),
+              ('+', 55.6, 39.2, 1.6, 0), ('-', 55.6, 44.3, 1.6, 0), ('OUT', 63.9, 31.0, 0.9, 90),
+              ('OUT- switched: never tie to IN-', 35.3, 47.0, 0.6, 0),
+              ('CV', 29.4, 41.95, 0.9, 0), ('CC', 41.2, 41.95, 0.9, 0), ('CW+', 35.3, 44.4, 0.7, 90),
+              ('IN', 1.25, 35.6, 0.6, 90), ('ON', 31.8, 39.3, 0.6, 0), ('OUT', 53.2, 46.5, 0.6, 90),
+              ('SafeBuck-80 v1.0', 32.5, 0.95, 0.9, 0)]
+    for txt, x, y, sz, rot in LABELS:
+        st = pcbnew.PCB_TEXT(board); st.SetText(txt); st.SetLayer(pcbnew.F_SilkS)
+        st.SetPosition(V(x, y)); st.SetTextAngleDegrees(rot)
+        st.SetTextSize(pcbnew.VECTOR2I(mm(sz), mm(sz))); st.SetTextThickness(mm(max(0.12, sz * 0.15)))
+        board.Add(st)
+
     # outline with 1 mm corner radius
     r = 1.0
     def seg(a, b):

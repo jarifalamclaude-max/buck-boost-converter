@@ -48,21 +48,22 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 
 <h2>4. First power-up (smoke test, step by step)</h2>
 <ol>
-<li>RV1 (CV) <b>counter-clockwise 25 paak</b> ghurie minimum e rakhun (output ~1.5 V). RV2 (CC) majhamajhi.</li>
+<li>RV1 (CV) <b>counter-clockwise 25 paak</b> ghurie minimum e rakhun (output ~1.6 V). RV2 (CC) majhamajhi.</li>
 <li>Bench supply: <b>12 V, current limit 0.2 A</b>. J1 er + ar − (silkscreen dekhun) e lagan, J2 te kichu na.</li>
 <li>Expected: <b>green LED jolbe</b>, red LED gulo bondho, input current ~20–40 mA. Kichu gorom hobe na.</li>
-<li>J2 te multimeter: ~1.5 V. RV1 clockwise ghuran → voltage barbe (25 paak e full range 1.5–36 V). (Kono kono 3296 pot e direction ulta — meter dekhe bujhun.)</li>
+<li>J2 te multimeter: ~1.6 V. RV1 clockwise ghuran → voltage barbe (25 paak e full range ~1.6–39 V; 36 V er beshi set korben na). (Kono kono 3296 pot e direction ulta — meter dekhe bujhun.)</li>
 <li>12 V set kore load (bulb) lagan, supply current limit 3 A koren. Bulb jolbe, voltage thik thakbe.</li>
 <li><b>CC set:</b> load khule, J2 te multimeter (10 A range) direct lagan (short) → current dekhaben → RV2 ghurie jei current limit chan set korun (0.9–8.3 A).</li></ol>
 
 <h2>5. Protection test (ichhe kore vhul connection)</h2>
 <table><tr><th>Test (supply current limit 1 A rakhun)</th><th>Expected</th></tr>
 <tr><td>Input + ar − ulta (12 V)</td><td>Red IN LED jolbe, output 0, kichu gorom na. Thik kore lagale abar chalu.</td></tr>
-<tr><td>Input 7 V (UV) / 42 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 37.6 V er niche abar chalu.</td></tr>
+<tr><td>Input 7 V (UV) / 45 V (OV)</td><td>Output bondho, red IN LED (OV/UV). 8.3 V er upore / 39 V er niche abar chalu.</td></tr>
 <tr><td>Output short (J2 + ar − jor)</td><td>CC limit e current, green LED on, board halka gorom. Short khulle abar normal.</td></tr>
 <tr><td>Output e 12 V battery <b>ulta</b> (converter chalu, CV jekono)</td><td>Q7 ~1–3 µs e off, <b>red OUT LED</b>, battery theke current nai. Battery khulle abar normal.</td></tr>
 <tr><td>Output e battery thik polarity te, input bondho</td><td>Battery drain hoy na (Q7 off), shudhu µA leakage.</td></tr></table>
-<div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na.</b> OUT− Q7 diye switch kora — jorle converter cholbe, kintu output reverse-battery protection ar kaj korbe na.</div>
+<div class="card warn"><b>OUT− ke kokhono VIN− er sathe bahire jorben na (common ground na).</b> OUT− Q7 diye switch kora. Jorle converter cholbe, kintu (1) output e ulta battery ar block hobe na (F2 kete jabe), (2) tokhon input o ulta dile supply Q7 er body diode diye short hobe. Load ar supply alada (floating) rakhun — bench smoke-tester e emnitei thake.</div>
+<div class="card warn"><b>Power limit:</b> CC pot emon bhabe set korun jate VOUT × ICC ≤ 80 W (jemon 36 V e ≤ 2.2 A). Beshi load dile board gorom hobe, PTC ~105 °C e current komabe; F1 (15 A) shudhu last resort.</div>
 
 <h2>6. Full power (80 W)</h2>
 <ul><li>Board er niche heatsink: thermal pad diye MOSFET/U1 area er bottom side heatsink e chepe lagan, M3 nylon spacer.</li>
@@ -72,7 +73,7 @@ U1 er exposed pad GND e solder na hole IC gorom hoye bondho hobe.</p>
 
 <h2>7. LED er mane</h2>
 <table><tr><th>LED</th><th>Mane</th></tr><tr><td>Green (LED1)</td><td>Controller er power (INTVCC 5 V) ache.</td></tr>
-<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; 41 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
+<tr><td>Red IN (LED2)</td><td>Input ulta, ba input &gt; ~43 V / &lt; 7.6 V.</td></tr><tr><td>Red OUT (LED3)</td><td>Output e battery ulta lagano.</td></tr></table>
 
 <h2>8. Troubleshooting</h2>
 <table><tr><th>Problem</th><th>Check</th></tr>

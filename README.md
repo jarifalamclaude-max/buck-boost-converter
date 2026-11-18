@@ -11,11 +11,11 @@ output short and a reversed battery on the output. Every one of these only light
 
 | | |
 |---|---|
-| Input | 9–36 V (works down to 8.3 V rising / 7.6 V falling), survives −60 V reversed and up to +60 V DC (cut-off above ~43 V, back on below ~39 V) |
+| Input | 9–36 V (starts at 8.2 V, stops below 7.5 V), survives −60 V reversed and up to +60 V DC (cut-off above ~43 V, back on below ~39 V) |
 | Output | 1.6–36 V (CV, 25-turn pot; the pot reaches ~39 V) and 0.94–8.33 A (CC, 25-turn pot), max 80 W |
 | Topology | 4-switch synchronous buck-boost, 300 kHz ±15 % spread spectrum, peak-current mode |
 | Efficiency (calculated) | 96.2–96.9 % (24 → 14.4 V, 80 W) · 93.4–94.8 % (9 → 35 V, 80 W) · 94.7–95.5 % (12 → 12 V) |
-| Protection | reverse input to −60 V, OV cut-off ~43 V, UV 7.6 V, inrush limit, input short while running (Q1 gate clamp), output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–6 µs), battery above the CV setting (FB clamp), inductive loads (VOUT clamp diode), thermal foldback (PTC), last-resort fuses on both sides |
+| Protection | reverse input to −60 V, OV cut-off ~43 V, UV 7.5 V, inrush limit, input short while running (Q1 gate clamp), output short (CC + 62.5 A instant trip), reversed battery on output (Q7 opens in 1–6 µs), battery above the CV setting (FB clamp), inductive loads (VOUT clamp diode), thermal foldback (PTC), last-resort fuses on both sides |
 | Indicators | green = ON, red IN = input reversed / OV / UV, red OUT = battery reversed on the output |
 | PCB | 65 × 48 mm, 2 layers, **2 oz copper**, 1.6 mm, all SMD on top (4 THT parts: 2 terminals, 2 pots) |
 
@@ -95,7 +95,7 @@ J1 VIN+ ─ F1 15A ─┬─ D1 TVS        ┌──────── LT8390 4-
 | Input 43–60 V DC | LM74930 OV opens Q1 (back on below 39.4 V; worst case ≥ 37.4 V, so a 36 V supply always restarts) | red IN LED, output off |
 | Input shorted while running | D17 (15 V zener) clamps Q1's gate-source; Q2 blocks reverse current | output off, no damage |
 | Input spike (hot-plug, cable inductance) | D1 SMBJ58CA, R1/C1 snubber, C11 ESR damping | clamped |
-| Input below 7.6 V | LM74930 UV + LT8390 EN/UVLO | output off, red IN LED |
+| Input below 7.5 V | LM74930 UV + LT8390 EN/UVLO | output off, red IN LED |
 | Output short circuit | LT8390 CC limit (keep-running) + 62.5 A instant ISOC | runs at the CC current, recovers when the short is removed |
 | Battery reversed on the output (≤ 35 V), any CV setting | Q9 (current > 83 A) or Q11 (OUT+ < −1.85 V) turns Q7 off within 1–6 µs, Q10 holds it off; D15 keeps VOUT_C above about −1.5 V | red OUT LED, peak 52–184 A for a few µs, Q7 avalanche ≤ 19 mJ (rated 274 mJ) |
 | Battery (correct polarity) above the CV setting, e.g. 36 V battery at CV 1.6 V | R46 + D14 hold the FB pin below 5.4 V (6 V abs max); LT8390 stops switching (FB over-voltage) | no damage; the battery is not discharged when VIN is off |

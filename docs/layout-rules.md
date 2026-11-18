@@ -87,3 +87,6 @@ How it is done on this board:
   grouped between the inductor and R31, so the trip loops stay short.
 * The red LEDs: LED2 (input fault) is next to J1 and LED3 (output reversed) is next to J2. The green LED1
   (power) sits between the pots.
+* D15 (the VOUT_C clamp Schottky) and the 4th output capacitor C36 sit right of Q6, on a copper extension of the VOUT_C zone,
+  with their GND pads on the top-layer GND pour and stitched to the bottom plane.
+* D17 (Q1 gate clamp) sits next to Q1/Q2. R46/D14 (FB protection) sit between U1 and the inductor.
